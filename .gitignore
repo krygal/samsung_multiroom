@@ -1,0 +1,19 @@
+# build
+*.pyc
+__pycache__
+*.egg*
+*.egg-info
+build/
+dist/
+
+
+# test
+.coverage
+htmlcov
+coverage.xml
+cc-test-reporter
+
+
+# pbr
+ChangeLog
+AUTHORS
