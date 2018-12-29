@@ -19,11 +19,19 @@ class Speaker:
 
     def get_name(self):
         """
-        Retrieve name associated with the speaker.
+        Retrieve speaker's name.
 
         :returns: Speaker name string
         """
         return self.api.get_speaker_name()
+
+    def set_name(self, name):
+        """
+        Set speaker's name.
+
+        :param name: Speaker name string
+        """
+        self.api.set_speaker_name(name)
 
     def get_volume(self):
         """

@@ -104,6 +104,27 @@ class TestApi(unittest.TestCase):
         self.assertEqual(speaker_name, 'Living Room')
 
     @httpretty.activate(allow_net_connect=False)
+    def test_set_speaker_name(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetSpkName%3C/name%3E%3Cp%20type=%22cdata%22%20name=%22spkname%22%20val=%22empty%22%3E%3C![CDATA[Living%20Room]]%3E%3C/p%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>SpkName</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier></user_identifier>
+                    <response result="ok">
+                        <spkname><![CDATA[Living Room]]></spkname>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        speaker_name = api.set_speaker_name('Living Room')
+
+    @httpretty.activate(allow_net_connect=False)
     def test_get_main_info(self):
         httpretty.register_uri(
             httpretty.GET,

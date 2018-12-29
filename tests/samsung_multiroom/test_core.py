@@ -22,6 +22,16 @@ class TestSpeaker(unittest.TestCase):
         api.get_speaker_name.assert_called_once()
         self.assertEqual(name, 'Speaker name')
 
+    def test_set_name(self):
+        api = MagicMock()
+
+        speaker_operator = MagicMock()
+
+        speaker = Speaker(api, speaker_operator)
+        speaker.set_name('Living Room')
+
+        api.set_speaker_name.assert_called_once_with('Living Room')
+
     def test_get_volume(self):
         api = MagicMock()
         api.get_volume.return_value = 10

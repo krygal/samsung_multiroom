@@ -103,6 +103,14 @@ class SamsungMultiroomApi:
         """
         return self.get(COMMAND_UIC, 'GetSpkName')['spkname']
 
+    def set_speaker_name(self, name):
+        """
+        Set speaker name.
+
+        :param name: new speaker name
+        """
+        self.get(COMMAND_UIC, 'SetSpkName', [('spkname', name, 'cdata')])
+
     def get_main_info(self):
         """
         :returns: Empty dict
@@ -318,5 +326,8 @@ def format_param(param):
             type_hint = 'dec'
     else:
         type_hint = attributes[0]
+
+    if type_hint == 'cdata':
+        return '<p type="{0}" name="{1}" val="empty"><![CDATA[{2}]]></p>'.format(type_hint, name, value)
 
     return '<p type="{0}" name="{1}" val="{2}"/>'.format(type_hint, name, value)
