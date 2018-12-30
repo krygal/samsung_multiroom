@@ -308,7 +308,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(shuffle_mode, True)
 
     @httpretty.activate(allow_net_connect=False)
-    def test_set_mute(self):
+    def test_set_shuffle_mode(self):
         httpretty.register_uri(
             httpretty.GET,
             'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetShuffleMode%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22shufflemode%22%20val%3D%22on%22/%3E',
@@ -374,7 +374,7 @@ class TestApi(unittest.TestCase):
         api.set_playback_control('pause')
 
     @httpretty.activate(allow_net_connect=False)
-    def test_get_func(self):
+    def test_get_music_info(self):
         httpretty.register_uri(
             httpretty.GET,
             'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetMusicInfo%3C%2Fname%3E',
