@@ -603,24 +603,248 @@ class TestApi(unittest.TestCase):
             httpretty.GET,
             'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetSelectRadio%3C/name%3E',
             match_querystring=True,
-                body="""<?xml version="1.0" encoding="UTF-8"?>
-                    <CPM>
-                        <method>RadioSelected</method>
-                        <version>0.1</version>
-                        <speakerip>192.168.1.129</speakerip>
-                        <user_identifier>public</user_identifier>
-                        <response result="ok">
-                            <cpname>TuneIn</cpname>
-                            <signinstatus>0</signinstatus>
-                            <timestamp>2018-12-28T18:35:17Z</timestamp>
-                            <audioinfo>
-                                <title>Radio Swiss Jazz (Jazz Music)</title>
-                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s6814d.png</thumbnail>
-                                <playstatus>play</playstatus>
-                            </audioinfo>
-                        </response>
-                    </CPM>"""
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioSelected</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <signinstatus>0</signinstatus>
+                        <timestamp>2018-12-28T18:35:17Z</timestamp>
+                        <audioinfo>
+                            <title>Radio Swiss Jazz (Jazz Music)</title>
+                            <thumbnail>http://cdn-radiotime-logos.tunein.com/s6814d.png</thumbnail>
+                            <playstatus>play</playstatus>
+                        </audioinfo>
+                    </response>
+                </CPM>"""
         )
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.set_select_radio()
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_dms_list(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetDmsList%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22liststartindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2220%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>DmsList</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <listtotalcount>1</listtotalcount>
+                        <liststartindex>0</liststartindex>
+                        <listcount>1</listcount>
+                        <dmslist>
+                            <dms device_id="0">
+                                <dmsid>uuid:00113249-398f-0011-8f39-8f3949321100</dmsid>
+                                <dmsname><![CDATA[nas]]></dmsname>
+                                <devicetype>network</devicetype>
+                                <thumbnail_PNG_LRG><![CDATA[http://192.168.1.111:50001/tmp_icon/dmsicon120.png]]></thumbnail_PNG_LRG>
+                                <thumbnail_JPG_LRG><![CDATA[http://192.168.1.111:50001/tmp_icon/dmsicon120.jpg]]></thumbnail_JPG_LRG>
+                                <thumbnail_PNG_SM><![CDATA[http://192.168.1.111:50001/tmp_icon/dmsicon48.png]]></thumbnail_PNG_SM>
+                                <thumbnail_JPG_SM><![CDATA[http://192.168.1.111:50001/tmp_icon/dmsicon48.jpg]]></thumbnail_JPG_SM>
+                            </dms>
+                        </dmslist>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        dms_list = api.get_dms_list(0, 20)
+
+        self.assertEqual(len(dms_list), 1)
+        self.assertEqual(dms_list[0], {
+            '@device_id': '0',
+            'dmsid': 'uuid:00113249-398f-0011-8f39-8f3949321100',
+            'dmsname': 'nas',
+            'devicetype': 'network',
+            'thumbnail_PNG_LRG': 'http://192.168.1.111:50001/tmp_icon/dmsicon120.png',
+            'thumbnail_JPG_LRG': 'http://192.168.1.111:50001/tmp_icon/dmsicon120.jpg',
+            'thumbnail_PNG_SM': 'http://192.168.1.111:50001/tmp_icon/dmsicon48.png',
+            'thumbnail_JPG_SM': 'http://192.168.1.111:50001/tmp_icon/dmsicon48.jpg',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_pc_get_music_list_by_category(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EPCGetMusicListByCategory%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22device_udn%22%20val%3D%22uuid%3A00113249-398f-0011-8f39-8f3949321100%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22filter%22%20val%3D%22folder%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22categoryid%22%20val%3D%22folder%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22liststartindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2220%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>PCMusicList</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <listtotalcount>3</listtotalcount>
+                        <liststartindex>0</liststartindex>
+                        <listcount>3</listcount>
+                        <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                        <filter>folder</filter>
+                        <playertype>myphone</playertype>
+                        <playbacktype>playlist</playbacktype>
+                        <sourcename><![CDATA[nas]]></sourcename>
+                        <parentid>0</parentid>
+                        <parentid2 />
+                        <musiclist>
+                            <music object_id="21">
+                                <type>CONTAINER</type>
+                                <playindex>-1</playindex>
+                                <name />
+                                <title><![CDATA[Music]]></title>
+                                <artist />
+                                <album />
+                                <thumbnail />
+                                <timelength />
+                                <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                            </music>
+                            <music object_id="37">
+                                <type>CONTAINER</type>
+                                <playindex>-1</playindex>
+                                <name />
+                                <title><![CDATA[Photo]]></title>
+                                <artist />
+                                <album />
+                                <thumbnail />
+                                <timelength />
+                                <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                            </music>
+                            <music object_id="44">
+                                <type>CONTAINER</type>
+                                <playindex>-1</playindex>
+                                <name />
+                                <title><![CDATA[Video]]></title>
+                                <artist />
+                                <album />
+                                <thumbnail />
+                                <timelength />
+                                <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                            </music>
+                        </musiclist>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        music_list = api.pc_get_music_list_by_category('uuid:00113249-398f-0011-8f39-8f3949321100', 0, 20)
+
+        self.assertEqual(len(music_list), 3)
+        self.assertEqual(music_list[0], {
+            '@object_id': '21',
+            'type': 'CONTAINER',
+            'playindex': '-1',
+            'name': None,
+            'title': 'Music',
+            'artist': None,
+            'album': None,
+            'thumbnail': None,
+            'timelength': None,
+            'device_udn': 'uuid:00113249-398f-0011-8f39-8f3949321100',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_pc_get_music_list_by_id(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EPCGetMusicListByID%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22device_udn%22%20val%3D%22uuid%3A00113249-398f-0011-8f39-8f3949321100%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22filter%22%20val%3D%22folder%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22parentid%22%20val%3D%2222%2430224%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22liststartindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2220%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>PCMusicList</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <listtotalcount>2</listtotalcount>
+                        <liststartindex>0</liststartindex>
+                        <listcount>2</listcount>
+                        <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                        <filter>folder</filter>
+                        <playertype>myphone</playertype>
+                        <playbacktype>playlist</playbacktype>
+                        <sourcename><![CDATA[nas]]></sourcename>
+                        <parentid>22$30224</parentid>
+                        <parentid2 />
+                        <musiclist>
+                            <music object_id="22$@52941">
+                                <type>AUDIO</type>
+                                <playindex>0</playindex>
+                                <name><![CDATA[La femme d'argent.mp3]]></name>
+                                <title><![CDATA[La femme d'argent]]></title>
+                                <artist><![CDATA[Air]]></artist>
+                                <album><![CDATA[Moon Safari]]></album>
+                                <thumbnail><![CDATA[http://192.168.1.111:50002/transcoder/jpegtnscaler.cgi/folderart/52941.jpg]]></thumbnail>
+                                <timelength>0:07:11.000</timelength>
+                                <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                            </music>
+                            <music object_id="22$@52942">
+                                <type>AUDIO</type>
+                                <playindex>1</playindex>
+                                <name><![CDATA[Sexy boy.mp3]]></name>
+                                <title><![CDATA[Sexy boy]]></title>
+                                <artist><![CDATA[Air]]></artist>
+                                <album><![CDATA[Moon Safari]]></album>
+                                <thumbnail><![CDATA[http://192.168.1.111:50002/transcoder/jpegtnscaler.cgi/folderart/52942.jpg]]></thumbnail>
+                                <timelength>0:04:58.000</timelength>
+                                <device_udn>uuid:00113249-398f-0011-8f39-8f3949321100</device_udn>
+                            </music>
+                        </musiclist>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        music_list = api.pc_get_music_list_by_id('uuid:00113249-398f-0011-8f39-8f3949321100', '22$30224', 0, 20)
+
+        self.assertEqual(len(music_list), 2)
+        self.assertEqual(music_list[0], {
+            '@object_id': '22$@52941',
+            'type': 'AUDIO',
+            'playindex': '0',
+            'name': 'La femme d\'argent.mp3',
+            'title': 'La femme d\'argent',
+            'artist': 'Air',
+            'album': 'Moon Safari',
+            'thumbnail': 'http://192.168.1.111:50002/transcoder/jpegtnscaler.cgi/folderart/52941.jpg',
+            'timelength': '0:07:11.000',
+            'device_udn': 'uuid:00113249-398f-0011-8f39-8f3949321100',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_playlist_playback_control(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetPlaylistPlaybackControl%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22playbackcontrol%22%20val%3D%22play%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22playertype%22%20val%3D%22allshare%22/%3E%3Cp%20type%3D%22cdata%22%20name%3D%22sourcename%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5B%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22dec%22%20name%3D%22playindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22playtime%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22totalobjectcount%22%20val%3D%221%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22device_udn%22%20val%3D%22uuid%3A00113249-398f-0011-8f39-8f3949321100%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22objectid%22%20val%3D%2222%24%4052942%22/%3E%3Cp%20type%3D%22cdata%22%20name%3D%22songtitle%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BSexy%20boy%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22cdata%22%20name%3D%22thumbnail%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5Bhttp%3A//192.168.1.111%3A50002/transcoder/jpegtnscaler.cgi/folderart/52941.jpg%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22cdata%22%20name%3D%22artist%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BAir%5D%5D%3E%3C/p%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>StopPlaybackEvent</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <playtime>0</playtime>
+                    </response>
+                </UIC>"""
+        )
+
+        items = [
+            {
+                'device_udn': 'uuid:00113249-398f-0011-8f39-8f3949321100',
+                'objectid': '22$@52942',
+                'title': 'Sexy boy',
+                'thumbnail': 'http://192.168.1.111:50002/transcoder/jpegtnscaler.cgi/folderart/52941.jpg',
+                'artist': 'Air',
+            }
+        ]
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_playlist_playback_control(items)

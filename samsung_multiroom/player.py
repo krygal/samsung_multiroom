@@ -5,7 +5,7 @@ import abc
 class PlayerOperator:
     """Select the right player for the current source."""
 
-    def __init__(self, api, players=[]):
+    def __init__(self, api, players=None):
         """
         Initialise player operator.
 
@@ -15,7 +15,7 @@ class PlayerOperator:
         self.api = api
         self.players = []
 
-        for player in players:
+        for player in (players or []):
             self.add_player(player)
 
     def add_player(self, player):

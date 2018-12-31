@@ -15,7 +15,6 @@ _LOGGER = logging.getLogger(__name__)
 
 class SamsungMultiroomApiException(Exception):
     """Generic API exception."""
-    pass
 
 
 class SamsungMultiroomApi:
@@ -257,14 +256,16 @@ class SamsungMultiroomApi:
             ('listcount', int(list_count)),
         ])
 
-        return response['presetlist']['preset']
+        return response_list(response['presetlist']['preset'])
 
     def get_radio_info(self):
         """
         Retrieves currently selected radio info and play status.
 
         :returns: Dict
-            - cpname - TuneIn|?
+            - cpname - TuneIn|Unknown|?
+            - playstatus - stop|play
+            Optionally:
             - root - preset category
             - presetindex -  position on the preset list
             - title - name of the radio
@@ -274,7 +275,6 @@ class SamsungMultiroomApi:
             - allowfeedback
             - timestamp - in ISO 8601 format
             - noqueue
-            - playstatus - stop|play
         """
         return self.get(COMMAND_CPM, 'GetRadioInfo')
 
@@ -300,6 +300,126 @@ class SamsungMultiroomApi:
         """
         self.get(COMMAND_CPM, 'SetSelectRadio')
 
+    def get_dms_list(self, start_index, list_count):
+        """
+        Retrieve list of DLNA compatible devices to use as a media source.
+
+        :param start_index:
+        :param list_count:
+        :returns: List of DLNA devices dicts
+            - @device_id - likely a sequential id
+            - dmsid - device udn e.g. uuid:00113249-398f-0011-8f39-8f3949321100
+            - dmsname - device name e.g. nas
+            - devicetype - e.g. network
+            - thumbnail_PNG_LRG - thumbnail url
+            - thumbnail_JPG_LRG - thumbnail url
+            - thumbnail_PNG_SM - thumbnail url
+            - thumbnail_JPG_SM - thumbnail url
+        """
+        response = self.get(COMMAND_UIC, 'GetDmsList', [
+            ('liststartindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ])
+
+        return response_list(response['dmslist']['dms'])
+
+    def pc_get_music_list_by_category(self, device_udn, start_index, list_count):
+        """
+        Browse containers at the root of the DLNA device.
+
+        :param device_udn: dmsid returned by get_dms_list()
+        :param start_index:
+        :param list_count:
+        :returns: List of category dicts
+            - @object_id - use it to browse into this container
+            - type - usually CONTAINER
+            - playindex - -1 for CONTAINERs
+            - name - folder name
+            - title - None
+            - artist - None
+            - album - None
+            - thumbnail - None
+            - timelength - None
+            - device_udn -
+        """
+        response = self.get(COMMAND_UIC, 'PCGetMusicListByCategory', [
+            ('device_udn', device_udn),
+            ('filter', 'folder'),
+            ('categoryid', 'folder'),
+            ('liststartindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ])
+
+        return response_list(response['musiclist']['music'])
+
+    def pc_get_music_list_by_id(self, device_udn, parent_id, start_index, list_count):
+        """
+        Browse containers/audio items in the container of the DLNA device.
+
+        :param device_udn: dmsid returned by get_dms_list()
+        :param parent_id: object_id as returned by pc_get_music_list_by_category or this method
+        :param start_index:
+        :param list_count:
+        :returns: List of containers/audio items dicts
+            - @object_id - e.g. 22$@52941
+            - type - CONTAINER|AUDIO
+            - playindex - -1 for CONTAINER, sequential for AUDIO
+            - name - folder/file name
+            - title
+            - artist
+            - album
+            - thumbnail - URL
+            - timelength - HH:MM:SS.xxx format
+            - device_udn -
+        """
+        response = self.get(COMMAND_UIC, 'PCGetMusicListByID', [
+            ('device_udn', device_udn),
+            ('filter', 'folder'),
+            ('parentid', str(parent_id)),
+            ('liststartindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ])
+
+        return response_list(response['musiclist']['music'])
+
+    def set_playlist_playback_control(self, items):
+        """
+        Create a playlist and playback.
+
+        Use pc_get_music_list_by_id() to fetch item information required for playlist item.
+
+        :param items: List of dicts:
+            - device_udn
+            - objectid
+            - title - song title
+            - artist - song artist
+            - thumbnail - URL
+        """
+        params = [
+            ('playbackcontrol', 'play'),
+            ('playertype', 'allshare'),
+            ('sourcename', '', 'cdata'),
+            ('playindex', 0),
+            ('playtime', 0),
+            ('totalobjectcount', len(items)),
+        ]
+
+        for item in items:
+            if 'title' not in item:
+                item['title'] = 'Unknown'
+            if 'title' not in item:
+                item['artist'] = 'Unknown'
+            if 'title' not in item:
+                item['thumbnail'] = ''
+
+            params.append(('device_udn', item['device_udn']))
+            params.append(('objectid', item['objectid']))
+            params.append(('songtitle', item['title'], 'cdata'))
+            params.append(('thumbnail', item['thumbnail'], 'cdata'))
+            params.append(('artist', item['artist'], 'cdata'))
+
+        self.get(COMMAND_UIC, 'SetPlaylistPlaybackControl', params)
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""
@@ -309,6 +429,14 @@ def on_off_bool(value):
 def bool_on_off(value):
     """Convert True/False to on/off correspondingly."""
     return 'on' if value else 'off'
+
+
+def response_list(input_list):
+    """xmltodict returns different structure if there's one item on the list."""
+    if isinstance(input_list, dict):
+        input_list = [input_list]
+
+    return input_list
 
 
 def format_action(action):

@@ -1,7 +1,4 @@
 """Entry control for speaker operation. """
-from .api import SamsungMultiroomApi
-from .api import SamsungMultiroomApiException
-from .player import PlayerOperator
 
 
 class Speaker:
