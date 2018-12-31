@@ -111,9 +111,9 @@ class TestSpeaker(unittest.TestCase):
     def test_unmute(self):
         api = MagicMock()
 
-        speaker_operator = MagicMock()
+        player_operator = MagicMock()
 
-        speaker = Speaker(api, speaker_operator)
+        speaker = Speaker(api, player_operator)
         speaker.unmute()
 
         api.set_mute.assert_called_once_with(False)
@@ -123,10 +123,26 @@ class TestSpeaker(unittest.TestCase):
 
         player1 = MagicMock(name='player')
 
-        speaker_operator = MagicMock()
-        speaker_operator.get_player.return_value = player1
+        player_operator = MagicMock()
+        player_operator.get_player.return_value = player1
 
-        speaker = Speaker(api, speaker_operator)
+        speaker = Speaker(api, player_operator)
         player = speaker.get_player()
 
         self.assertEqual(player, player1)
+
+    def test_get_browser(self):
+        api = MagicMock()
+
+        player_operator = MagicMock()
+        browsers = [
+            MagicMock(),
+            MagicMock(),
+        ]
+        browsers[0].get_name.return_value = 'b1'
+        browsers[1].get_name.return_value = 'b2'
+
+        speaker = Speaker(api, player_operator, browsers)
+        browser = speaker.get_browser('b2')
+
+        self.assertEqual(browser, browsers[1])

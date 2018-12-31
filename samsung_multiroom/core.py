@@ -4,15 +4,19 @@
 class Speaker:
     """Entry control for speaker operation."""
 
-    def __init__(self, api, player_operator):
+    def __init__(self, api, player_operator, browsers=None):
         """
         Initialise the speaker.
 
         :param api: SamsungMultiroomApi instance
         :param player_operator: PlayerOperator instance
         """
-        self.api = api
-        self.player_operator = player_operator
+        self._api = api
+        self._player_operator = player_operator
+        self._browsers = {}
+
+        for browser in (browsers or []):
+            self._browsers[browser.get_name()] = browser
 
     def get_name(self):
         """
@@ -20,7 +24,7 @@ class Speaker:
 
         :returns: Speaker name string
         """
-        return self.api.get_speaker_name()
+        return self._api.get_speaker_name()
 
     def set_name(self, name):
         """
@@ -28,7 +32,7 @@ class Speaker:
 
         :param name: Speaker name string
         """
-        self.api.set_speaker_name(name)
+        self._api.set_speaker_name(name)
 
     def get_volume(self):
         """
@@ -36,7 +40,7 @@ class Speaker:
 
         :returns: int current volume
         """
-        return self.api.get_volume()
+        return self._api.get_volume()
 
     def set_volume(self, volume):
         """
@@ -47,7 +51,7 @@ class Speaker:
         if not isinstance(volume, int) or int(volume) < 0 or int(volume) > 100:
             raise ValueError('Volume must be integer between 0 and 100')
 
-        self.api.set_volume(volume)
+        self._api.set_volume(volume)
 
     def get_sources(self):
         """
@@ -63,7 +67,7 @@ class Speaker:
 
         :returns: selected source string.
         """
-        function = self.api.get_func()
+        function = self._api.get_func()
         return function['function']
 
     def set_source(self, source):
@@ -75,7 +79,7 @@ class Speaker:
         if source not in self.get_sources():
             raise ValueError('Invalid source {0}'.format(source))
 
-        self.api.set_func(source)
+        self._api.set_func(source)
 
     def is_muted(self):
         """
@@ -83,15 +87,15 @@ class Speaker:
 
         :returns: True if muted, False otherwise
         """
-        return self.api.get_mute()
+        return self._api.get_mute()
 
     def mute(self):
         """Mute the speaker."""
-        self.api.set_mute(True)
+        self._api.set_mute(True)
 
     def unmute(self):
         """Unmute the speaker."""
-        self.api.set_mute(False)
+        self._api.set_mute(False)
 
     def get_player(self):
         """
@@ -101,4 +105,12 @@ class Speaker:
 
         :returns: Player instance
         """
-        return self.player_operator.get_player()
+        return self._player_operator.get_player()
+
+    def get_browser(self, name):
+        """
+        Get media browser by type
+
+        :returns: Browser instance
+        """
+        return self._browsers[name]

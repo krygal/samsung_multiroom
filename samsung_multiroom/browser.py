@@ -17,6 +17,12 @@ class Browser:
     def __init__(self, items=None):
         self._items = items.copy() if items else []
 
+    def get_name(self):
+        """
+        :returns: Name of the browser
+        """
+        raise NotImplementedError()
+
     def list(self, path=None):
         """
         List items based on path.
@@ -39,63 +45,6 @@ class Browser:
         return self._items.copy()
 
 
-class Item:
-    """
-    Immutable browser item.
-    """
-    def __init__(self, device_udn, object_id, name, metadata=None):
-        self._device_udn = device_udn
-        self._object_id = object_id
-        self._name = name
-        self._metadata = metadata or {}
-
-    @property
-    def device_udn(self):
-        """
-        :returns: Unique Device Name
-        """
-        return self._device_udn
-
-    @property
-    def object_id(self):
-        """
-        :returns: Object id
-        """
-        return self._object_id
-
-    @property
-    def name(self):
-        """
-        :returns: Item name
-        """
-        return self._name
-
-    @property
-    def metadata(self):
-        """
-        :returns: Item metadata specific to item type
-        """
-        return self._metadata
-
-
-class ContainerItem(Item):
-    """
-    Container item.
-    """
-
-
-class AudioItem(Item):
-    """
-    Audio item.
-    """
-
-
-class RadioItem(Item):
-    """
-    Radio item.
-    """
-
-
 class DlnaBrowser(Browser):
     """
     DLNA DMA device browser.
@@ -105,6 +54,9 @@ class DlnaBrowser(Browser):
         super().__init__(items)
 
         self._api = api
+
+    def get_name(self):
+        return 'dlna'
 
     def list(self, path=None):
         path = unify_path(path)
@@ -156,6 +108,9 @@ class TuneInBrowser(Browser):
 
         self._api = api
 
+    def get_name(self):
+        return 'tunein'
+
     def list(self, path=None):
         path = unify_path(path)
 
@@ -189,6 +144,64 @@ class TuneInBrowser(Browser):
                     items.append(radio_to_radio_item(radio_item))
 
         return TuneInBrowser(self._api, items)
+
+
+class Item:
+    """
+    Immutable browser item.
+    """
+
+    def __init__(self, device_udn, object_id, name, metadata=None):
+        self._device_udn = device_udn
+        self._object_id = object_id
+        self._name = name
+        self._metadata = metadata or {}
+
+    @property
+    def device_udn(self):
+        """
+        :returns: Unique Device Name
+        """
+        return self._device_udn
+
+    @property
+    def object_id(self):
+        """
+        :returns: Object id
+        """
+        return self._object_id
+
+    @property
+    def name(self):
+        """
+        :returns: Item name
+        """
+        return self._name
+
+    @property
+    def metadata(self):
+        """
+        :returns: Item metadata specific to item type
+        """
+        return self._metadata
+
+
+class ContainerItem(Item):
+    """
+    Container item.
+    """
+
+
+class AudioItem(Item):
+    """
+    Audio item.
+    """
+
+
+class RadioItem(Item):
+    """
+    Radio item.
+    """
 
 
 def unify_path(path):

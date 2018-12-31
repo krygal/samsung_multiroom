@@ -12,8 +12,8 @@ class PlayerOperator:
         :param api: SamsungMultiroomApi instance
         :param players: List of Player instances
         """
-        self.api = api
-        self.players = []
+        self._api = api
+        self._players = []
 
         for player in (players or []):
             self.add_player(player)
@@ -27,7 +27,7 @@ class PlayerOperator:
         if not isinstance(player, Player):
             raise ValueError('Player must be a subclass of Player class')
 
-        self.players.append(player)
+        self._players.append(player)
 
     def get_player(self):
         """
@@ -35,12 +35,12 @@ class PlayerOperator:
 
         :returns: Player instance
         """
-        func = self.api.get_func()
+        func = self._api.get_func()
 
         function = func['function']
         submode = func['submode']
 
-        for player in self.players:
+        for player in self._players:
             if player.is_supported(function, submode):
                 return player
 
@@ -98,11 +98,11 @@ class DlnaPlayer(Player):
     """Controls player in WIFI+DLNA mode."""
 
     def __init__(self, api):
-        self.api = api
+        self._api = api
 
     def resume(self):
         """Play/resume current track."""
-        self.api.set_playback_control('resume')
+        self._api.set_playback_control('resume')
 
     def stop(self):
         """Stop current track and reset position to the beginning."""
@@ -110,15 +110,15 @@ class DlnaPlayer(Player):
 
     def pause(self):
         """Pause current track and retain position."""
-        self.api.set_playback_control('pause')
+        self._api.set_playback_control('pause')
 
     def next(self):
         """Play next track in the queue."""
-        self.api.set_trick_mode('next')
+        self._api.set_trick_mode('next')
 
     def previous(self):
         """Play previous track in the queue."""
-        self.api.set_trick_mode('previous')
+        self._api.set_trick_mode('previous')
 
     def get_current_track(self):
         """
@@ -126,7 +126,7 @@ class DlnaPlayer(Player):
 
         :returns: Track instance, or None if unavailable
         """
-        music_info = self.api.get_music_info()
+        music_info = self._api.get_music_info()
 
         track_kwargs = {}
 
@@ -159,11 +159,11 @@ class TuneInPlayer(Player):
     """Controls player in WIFI+ TuneIn radio mode."""
 
     def __init__(self, api):
-        self.api = api
+        self._api = api
 
     def resume(self):
         """Play/resume current track."""
-        self.api.set_select_radio()
+        self._api.set_select_radio()
 
     def stop(self):
         """Stop current radio."""
@@ -171,7 +171,7 @@ class TuneInPlayer(Player):
 
     def pause(self):
         """Pause current radio."""
-        self.api.set_playback_control('pause')
+        self._api.set_playback_control('pause')
 
     def next(self):
         """Play next radio from the preset list."""
@@ -187,7 +187,7 @@ class TuneInPlayer(Player):
 
         :returns: Track instance, or None if unavailable
         """
-        radio_info = self.api.get_radio_info()
+        radio_info = self._api.get_radio_info()
 
         track_kwargs = {}
 
@@ -217,14 +217,14 @@ class TuneInPlayer(Player):
             raise ValueError('Direction must be either 1 or -1')
 
         # todo: iterate beyond 10 elements
-        presets = self.api.get_preset_list(0, 10)
+        presets = self._api.get_preset_list(0, 10)
         presets_count = len(presets)
 
         if presets_count <= 1:
             return
 
         # locate current mediaid on the preset list
-        radio_info = self.api.get_radio_info()
+        radio_info = self._api.get_radio_info()
 
         current_preset_index = -direction
         if 'presetindex' in radio_info and radio_info['presetindex'] is not None:
@@ -239,8 +239,8 @@ class TuneInPlayer(Player):
         preset = presets[preset_index]
         preset_type = kind_preset_type[preset['kind']]
 
-        self.api.set_play_preset(preset_type, preset_index)
-        self.api.set_select_radio()
+        self._api.set_play_preset(preset_type, preset_index)
+        self._api.set_select_radio()
 
 
 class NullPlayer(Player):

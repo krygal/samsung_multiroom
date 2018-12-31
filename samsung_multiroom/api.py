@@ -31,7 +31,7 @@ class SamsungMultiroomApi:
         :param ip_address: IP address of the speaker to connect to
         :param port: Port to use, defaults to 55001
         """
-        self.endpoint = 'http://{0}:{1}'.format(ip_address, port)
+        self._endpoint = 'http://{0}:{1}'.format(ip_address, port)
 
     def request(self, method, command, payload):
         """
@@ -50,7 +50,7 @@ class SamsungMultiroomApi:
         if command not in [COMMAND_UIC, COMMAND_CPM]:
             raise ValueError('Invalid command {0}, must be one of COMMAND_* constants'.format(method))
 
-        url = '{0}/{1}?cmd={2}'.format(self.endpoint, command, urllib.parse.quote(payload))
+        url = '{0}/{1}?cmd={2}'.format(self._endpoint, command, urllib.parse.quote(payload))
 
         try:
             _LOGGER.debug('Request %s. Raw payload %s', url, payload)
