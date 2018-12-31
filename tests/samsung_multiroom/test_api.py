@@ -848,3 +848,298 @@ class TestApi(unittest.TestCase):
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.set_playlist_playback_control(items)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_browse_main(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EBrowseMain%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <root>Browse</root>
+                        <browsemode>0</browsemode>
+                        <category isroot="1">Browse</category>
+                        <totallistcount>4</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>4</listcount>
+                        <timestamp>2018-12-31T16:06:37Z</timestamp>
+                        <menulist>
+                            <menuitem type="0">
+                                <title>Favorites</title>
+                                <contentid>0</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Local Radio</title>
+                                <contentid>1</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Recents</title>
+                                <contentid>2</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Trending</title>
+                                <contentid>3</contentid>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        items = api.browse_main(0, 30)
+
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0], {
+            '@type': '0',
+            'title': 'Favorites',
+            'contentid': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_select_radio_list_with_folders(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetSelectRadioList%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22contentid%22%20val%3D%2210%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <root>Browse</root>
+                        <browsemode>0</browsemode>
+                        <category isroot="0">By Language</category>
+                        <totallistcount>4</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>4</listcount>
+                        <timestamp>2018-12-31T16:23:16Z</timestamp>
+                        <menulist>
+                            <menuitem type="0">
+                                <title>Aboriginal</title>
+                                <contentid>0</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Afrikaans</title>
+                                <contentid>1</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Akan</title>
+                                <contentid>2</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Albanian</title>
+                                <contentid>3</contentid>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        items = api.get_select_radio_list(10, 0, 30)
+
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0], {
+            '@type': '0',
+            'title': 'Aboriginal',
+            'contentid': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_select_radio_list_with_radios(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetSelectRadioList%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22contentid%22%20val%3D%223%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <root>Browse</root>
+                        <browsemode>0</browsemode>
+                        <category isroot="0">Trending</category>
+                        <totallistcount>4</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>4</listcount>
+                        <timestamp>2018-12-31T16:30:03Z</timestamp>
+                        <menulist>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-profiles.tunein.com/s297990/images/logot.png</thumbnail>
+                                <description>MSNBC Live with Velshi &amp; Ruhle</description>
+                                <mediaid>s297990</mediaid>
+                                <title>MSNBC</title>
+                                <contentid>0</contentid>
+                            </menuitem>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s24940t.png</thumbnail>
+                                <description>Amazing music. Played by an amazing line up.</description>
+                                <mediaid>s24940</mediaid>
+                                <title>BBC Radio 2</title>
+                                <contentid>1</contentid>
+                            </menuitem>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s17077t.png</thumbnail>
+                                <description>Drive with Adrian Durham &amp; Matt Holland</description>
+                                <mediaid>s17077</mediaid>
+                                <title>talkSPORT</title>
+                                <contentid>2</contentid>
+                            </menuitem>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s24939t.png</thumbnail>
+                                <description>The best new music</description>
+                                <mediaid>s24939</mediaid>
+                                <title>BBC Radio 1</title>
+                                <contentid>3</contentid>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        items = api.get_select_radio_list(3, 0, 30)
+
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0], {
+            '@type': '2',
+            'thumbnail': 'http://cdn-profiles.tunein.com/s297990/images/logot.png',
+            'description': 'MSNBC Live with Velshi & Ruhle',
+            'mediaid': 's297990',
+            'title': 'MSNBC',
+            'contentid': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_current_radio_list(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetCurrentRadioList%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <root>Browse</root>
+                        <browsemode>0</browsemode>
+                        <category isroot="0">Trending</category>
+                        <totallistcount>4</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>4</listcount>
+                        <timestamp>2018-12-31T16:30:03Z</timestamp>
+                        <menulist>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-profiles.tunein.com/s297990/images/logot.png</thumbnail>
+                                <description>MSNBC Live with Velshi &amp; Ruhle</description>
+                                <mediaid>s297990</mediaid>
+                                <title>MSNBC</title>
+                                <contentid>0</contentid>
+                            </menuitem>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s24940t.png</thumbnail>
+                                <description>Amazing music. Played by an amazing line up.</description>
+                                <mediaid>s24940</mediaid>
+                                <title>BBC Radio 2</title>
+                                <contentid>1</contentid>
+                            </menuitem>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s17077t.png</thumbnail>
+                                <description>Drive with Adrian Durham &amp; Matt Holland</description>
+                                <mediaid>s17077</mediaid>
+                                <title>talkSPORT</title>
+                                <contentid>2</contentid>
+                            </menuitem>
+                            <menuitem type="2">
+                                <thumbnail>http://cdn-radiotime-logos.tunein.com/s24939t.png</thumbnail>
+                                <description>The best new music</description>
+                                <mediaid>s24939</mediaid>
+                                <title>BBC Radio 1</title>
+                                <contentid>3</contentid>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        items = api.get_current_radio_list(0, 30)
+
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0], {
+            '@type': '2',
+            'thumbnail': 'http://cdn-profiles.tunein.com/s297990/images/logot.png',
+            'description': 'MSNBC Live with Velshi & Ruhle',
+            'mediaid': 's297990',
+            'title': 'MSNBC',
+            'contentid': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_upper_radio_list(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetUpperRadioList%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <root>Browse</root>
+                        <browsemode>0</browsemode>
+                        <category isroot="0">By Language</category>
+                        <totallistcount>4</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>4</listcount>
+                        <timestamp>2018-12-31T16:23:16Z</timestamp>
+                        <menulist>
+                            <menuitem type="0">
+                                <title>Aboriginal</title>
+                                <contentid>0</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Afrikaans</title>
+                                <contentid>1</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Akan</title>
+                                <contentid>2</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Albanian</title>
+                                <contentid>3</contentid>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        items = api.get_upper_radio_list(0, 30)
+
+        self.assertEqual(len(items), 4)
+        self.assertEqual(items[0], {
+            '@type': '0',
+            'title': 'Aboriginal',
+            'contentid': '0',
+        })

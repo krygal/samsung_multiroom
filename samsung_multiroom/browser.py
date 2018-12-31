@@ -90,6 +90,12 @@ class AudioItem(Item):
     """
 
 
+class RadioItem(Item):
+    """
+    Radio item.
+    """
+
+
 class DlnaBrowser(Browser):
     """
     DLNA DMA device browser.
@@ -140,6 +146,51 @@ class DlnaBrowser(Browser):
         return DlnaBrowser(self._api, items)
 
 
+class TuneInBrowser(Browser):
+    """
+    TuneIn radio browser.
+    """
+
+    def __init__(self, api, items=None):
+        super().__init__(items)
+
+        self._api = api
+
+    def list(self, path=None):
+        path = unify_path(path)
+
+        parent_id = None
+
+        # from root
+        if path[0] is None:
+            items = []
+        else:
+            items = self._get_items()
+
+        for folder in path:
+            # locate prepopulated items matching folder
+            for item in items:
+                if item.name == folder:
+                    parent_id = item.object_id
+                    break
+
+            # if we don't have device udn we search through devices
+            if parent_id is None:
+                items = []
+                radio_list = self._api.browse_main(0, 30)
+
+                for radio_item in radio_list:
+                    items.append(radio_to_radio_item(radio_item))
+            else:
+                items = []
+                radio_list = self._api.get_select_radio_list(parent_id, 0, 30)
+
+                for radio_item in radio_list:
+                    items.append(radio_to_radio_item(radio_item))
+
+        return TuneInBrowser(self._api, items)
+
+
 def unify_path(path):
     """
     Convert path to a standarised list of folder.
@@ -173,6 +224,27 @@ def dms_to_item(dms):
         object_id=None,
         name=dms['dmsname']
     )
+
+
+def radio_to_radio_item(radio):
+    """
+    :param dms: Radio dict to convert
+    :returns: Item instance
+    """
+    if radio['@type'] == '0':
+        return ContainerItem(
+            device_udn=None,
+            object_id=radio['contentid'],
+            name=radio['title']
+        )
+    if radio['@type'] == '2':
+        return RadioItem(
+            device_udn=None,
+            object_id=radio['contentid'],
+            name=radio['title']
+        )
+
+    raise ValueError('Unsupported radio item type {0}'.format(radio['@type']))
 
 
 def music_item_to_item(music_item):

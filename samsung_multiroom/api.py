@@ -420,6 +420,90 @@ class SamsungMultiroomApi:
 
         self.get(COMMAND_UIC, 'SetPlaylistPlaybackControl', params)
 
+    def browse_main(self, start_index, list_count):
+        """
+        Browse radios from the root.
+
+        :param start_index:
+        :param list_count:
+        :returns: radio list item dict:
+            folder:
+            - @type - 0 - folder, 2 - radio
+            - title - name of the folder
+            - contentid - pass to get_select_radio_list() to browse into this folder
+            radio:
+            - @type - 0 - folder, 2 - radio
+            - title - name of the radio
+            - description - radio description
+            - mediaid
+            - thumbnail - URL
+            - contentid
+        """
+        params = [
+            ('startindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'BrowseMain', params)
+
+        return response_list(response['menulist']['menuitem'])
+
+    def get_select_radio_list(self, content_id, start_index, list_count):
+        """
+        Browse specific radio folder.
+
+        Note: you can't browse arbitrary folder. In order to browse a folder you had to navigate to it in a previous
+        browse_main() or get_select_radio_list() call. This limitation is imposed by the speaker.
+
+        :param content_id: contentid as returned from browse_main() or get_select_radio_list()
+        :param start_index:
+        :param list_count:
+        :returns: see browse_main()
+        """
+        params = [
+            ('contentid', int(content_id)),
+            ('startindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'GetSelectRadioList', params)
+
+        return response_list(response['menulist']['menuitem'])
+
+    def get_current_radio_list(self, start_index, list_count):
+        """
+        Browse previously browsed radio folder.
+
+        :param start_index:
+        :param list_count:
+        :returns: see browse_main()
+        """
+        params = [
+            ('startindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'GetCurrentRadioList', params)
+
+        return response_list(response['menulist']['menuitem'])
+
+    def get_upper_radio_list(self, start_index, list_count):
+        """
+        Browse parent of a browsed radio folder.
+
+        :param start_index:
+        :param list_count:
+        :returns: see browse_main()
+        """
+        params = [
+            ('startindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'GetUpperRadioList', params)
+
+        return response_list(response['menulist']['menuitem'])
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""
