@@ -1,6 +1,10 @@
 import unittest
-from unittest.mock import MagicMock, call
-from samsung_multiroom.browser import TuneInBrowser, ContainerItem, RadioItem
+from unittest.mock import MagicMock
+from unittest.mock import call
+
+from samsung_multiroom.browser import ContainerItem
+from samsung_multiroom.browser import RadioItem
+from samsung_multiroom.browser import TuneInBrowser
 
 
 def browser_main_return_value():
@@ -98,14 +102,15 @@ class TestTuneInBrowser(unittest.TestCase):
         api.browse_main.return_value = browser_main_return_value()
 
         browser = TuneInBrowser(api)
-        items = browser.list()
+        browser = browser.list()
 
         api.browse_main.assert_called_once_with(0, 30)
 
-        self.assertEqual(len(items), 5)
-        self.assertIsInstance(items[0], ContainerItem)
-        self.assertEqual(items[0].name, 'Favorites')
-        self.assertEqual(items[0].object_id, '0')
+        self.assertEqual(browser.get_path(), '/')
+        self.assertEqual(len(browser), 5)
+        self.assertIsInstance(browser[0], ContainerItem)
+        self.assertEqual(browser[0].name, 'Favorites')
+        self.assertEqual(browser[0].object_id, '0')
 
     def test_list_full_level(self):
         api = MagicMock()
@@ -113,7 +118,7 @@ class TestTuneInBrowser(unittest.TestCase):
         api.get_select_radio_list.side_effect = get_select_radio_list_side_effect
 
         browser = TuneInBrowser(api)
-        items = browser.list('/By Language/English/Music')
+        browser = browser.list('/By Language/English/Music')
 
         api.browse_main.assert_called_once_with(0, 30)
         api.get_select_radio_list.assert_has_calls([
@@ -122,10 +127,11 @@ class TestTuneInBrowser(unittest.TestCase):
             call('0', 0, 30),
         ])
 
-        self.assertEqual(len(items), 2)
-        self.assertIsInstance(items[0], RadioItem)
-        self.assertEqual(items[0].name, 'MSNBC')
-        self.assertEqual(items[0].object_id, '0')
+        self.assertEqual(browser.get_path(), '/By Language/English/Music')
+        self.assertEqual(len(browser), 2)
+        self.assertIsInstance(browser[0], RadioItem)
+        self.assertEqual(browser[0].name, 'MSNBC')
+        self.assertEqual(browser[0].object_id, '0')
 
     def test_list_relative(self):
         api = MagicMock()
@@ -133,7 +139,7 @@ class TestTuneInBrowser(unittest.TestCase):
         api.get_select_radio_list.side_effect = get_select_radio_list_side_effect
 
         browser = TuneInBrowser(api)
-        items = browser.list('/By Language/English').list('Music')
+        browser = browser.list('/By Language/English').list('Music')
 
         api.browse_main.assert_called_once_with(0, 30)
         api.get_select_radio_list.assert_has_calls([
@@ -142,7 +148,8 @@ class TestTuneInBrowser(unittest.TestCase):
             call('0', 0, 30),
         ])
 
-        self.assertEqual(len(items), 2)
-        self.assertIsInstance(items[0], RadioItem)
-        self.assertEqual(items[0].name, 'MSNBC')
-        self.assertEqual(items[0].object_id, '0')
+        self.assertEqual(browser.get_path(), '/By Language/English/Music')
+        self.assertEqual(len(browser), 2)
+        self.assertIsInstance(browser[0], RadioItem)
+        self.assertEqual(browser[0].name, 'MSNBC')
+        self.assertEqual(browser[0].object_id, '0')

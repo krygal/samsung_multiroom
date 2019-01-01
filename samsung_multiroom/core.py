@@ -10,6 +10,7 @@ class Speaker:
 
         :param api: SamsungMultiroomApi instance
         :param player_operator: PlayerOperator instance
+        :param browsers: List of Browser instances
         """
         self._api = api
         self._player_operator = player_operator

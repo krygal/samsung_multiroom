@@ -1,12 +1,6 @@
 """Browse media sources."""
 
 
-ITEM_TYPE_DEVICE = 'device'
-ITEM_TYPE_CONTAINER = 'container'
-ITEM_TYPE_AUDIO = 'audio'
-ITEM_TYPE_OTHER = 'other'
-
-
 class Browser:
     """
     Abstract media browser.
@@ -14,7 +8,12 @@ class Browser:
     Implementations should be immutable.
     """
 
-    def __init__(self, items=None):
+    def __init__(self, path=None, items=None):
+        """
+        :param path: Path used to list items
+        :param items: Items listed
+        """
+        self._path = path
         self._items = items.copy() if items else []
 
     def get_name(self):
@@ -22,6 +21,12 @@ class Browser:
         :returns: Name of the browser
         """
         raise NotImplementedError()
+
+    def get_path(self):
+        """
+        :returns: Path used to list items
+        """
+        return self._path
 
     def list(self, path=None):
         """
@@ -31,6 +36,14 @@ class Browser:
         :returns: Browser instance with listed items
         """
         raise NotImplementedError()
+
+    def _merge_path(self, new_path):
+        folders = path_to_folders(new_path)
+
+        if folders[0] is not None:
+            folders = path_to_folders(self.get_path()) + folders
+
+        return folders_to_path(folders)
 
     def _get_items(self):
         return self._items
@@ -50,8 +63,8 @@ class DlnaBrowser(Browser):
     DLNA DMA device browser.
     """
 
-    def __init__(self, api, items=None):
-        super().__init__(items)
+    def __init__(self, api, path=None, items=None):
+        super().__init__(path, items)
 
         self._api = api
 
@@ -59,18 +72,18 @@ class DlnaBrowser(Browser):
         return 'dlna'
 
     def list(self, path=None):
-        path = unify_path(path)
+        folders = path_to_folders(path)
 
         device_udn = None
         parent_id = None
 
         # from root
-        if path[0] is None:
+        if folders[0] is None:
             items = []
         else:
             items = self._get_items()
 
-        for folder in path:
+        for folder in folders:
             # locate prepopulated items matching folder
             for item in items:
                 if item.name == folder:
@@ -95,7 +108,7 @@ class DlnaBrowser(Browser):
                 for music_item in music_list:
                     items.append(music_item_to_item(music_item))
 
-        return DlnaBrowser(self._api, items)
+        return DlnaBrowser(self._api, self._merge_path(path), items)
 
 
 class TuneInBrowser(Browser):
@@ -103,8 +116,8 @@ class TuneInBrowser(Browser):
     TuneIn radio browser.
     """
 
-    def __init__(self, api, items=None):
-        super().__init__(items)
+    def __init__(self, api, path=None, items=None):
+        super().__init__(path, items)
 
         self._api = api
 
@@ -112,17 +125,17 @@ class TuneInBrowser(Browser):
         return 'tunein'
 
     def list(self, path=None):
-        path = unify_path(path)
+        folders = path_to_folders(path)
 
         parent_id = None
 
         # from root
-        if path[0] is None:
+        if folders[0] is None:
             items = []
         else:
             items = self._get_items()
 
-        for folder in path:
+        for folder in folders:
             # locate prepopulated items matching folder
             for item in items:
                 if item.name == folder:
@@ -143,7 +156,7 @@ class TuneInBrowser(Browser):
                 for radio_item in radio_list:
                     items.append(radio_to_radio_item(radio_item))
 
-        return TuneInBrowser(self._api, items)
+        return TuneInBrowser(self._api, self._merge_path(path), items)
 
 
 class Item:
@@ -204,7 +217,7 @@ class RadioItem(Item):
     """
 
 
-def unify_path(path):
+def path_to_folders(path):
     """
     Convert path to a standarised list of folder.
 
@@ -227,16 +240,28 @@ def unify_path(path):
     return path
 
 
+def folders_to_path(folders):
+    """
+    Convert list of folders to a path.
+
+    :param folders: List of folders, None denotes a root folder e.g. [None, 'NAS', 'Music', 'By Folder', 'folder1']
+    :returns: path string e.g. /NAS/Music/By Folder/folder1
+    """
+    if not folders:
+        return '/'
+
+    if folders[0] is None:
+        folders[0] = ''
+
+    return '/'.join(folders) or '/'
+
+
 def dms_to_item(dms):
     """
     :param dms: Dms dict to convert
     :returns: Item instance
     """
-    return Item(
-        device_udn=dms['dmsid'],
-        object_id=None,
-        name=dms['dmsname']
-    )
+    return Item(device_udn=dms['dmsid'], object_id=None, name=dms['dmsname'])
 
 
 def radio_to_radio_item(radio):
@@ -245,17 +270,9 @@ def radio_to_radio_item(radio):
     :returns: Item instance
     """
     if radio['@type'] == '0':
-        return ContainerItem(
-            device_udn=None,
-            object_id=radio['contentid'],
-            name=radio['title']
-        )
+        return ContainerItem(device_udn=None, object_id=radio['contentid'], name=radio['title'])
     if radio['@type'] == '2':
-        return RadioItem(
-            device_udn=None,
-            object_id=radio['contentid'],
-            name=radio['title']
-        )
+        return RadioItem(device_udn=None, object_id=radio['contentid'], name=radio['title'])
 
     raise ValueError('Unsupported radio item type {0}'.format(radio['@type']))
 
@@ -271,8 +288,4 @@ def music_item_to_item(music_item):
     if music_item['type'] == 'AUDIO':
         item_type = AudioItem
 
-    return item_type(
-        device_udn=music_item['device_udn'],
-        object_id=music_item['@object_id'],
-        name=music_item['title']
-    )
+    return item_type(device_udn=music_item['device_udn'], object_id=music_item['@object_id'], name=music_item['title'])

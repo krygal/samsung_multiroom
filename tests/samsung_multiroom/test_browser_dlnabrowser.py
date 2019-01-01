@@ -1,6 +1,12 @@
 import unittest
-from unittest.mock import MagicMock, call
-from samsung_multiroom.browser import DlnaBrowser, Item, AudioItem, ContainerItem, unify_path
+from unittest.mock import MagicMock
+from unittest.mock import call
+
+from samsung_multiroom.browser import AudioItem
+from samsung_multiroom.browser import ContainerItem
+from samsung_multiroom.browser import DlnaBrowser
+from samsung_multiroom.browser import Item
+from samsung_multiroom.browser import path_to_folders
 
 
 def get_dms_list_return_value():
@@ -104,13 +110,13 @@ def pc_get_music_list_by_id_side_effect(device_udn, parent_id, start_index, list
 
 class TestDlnaBrowser(unittest.TestCase):
 
-    def test_unify_path(self):
-        self.assertEqual(unify_path(None), [None])
-        self.assertEqual(unify_path(''), [None])
-        self.assertEqual(unify_path('/'), [None])
-        self.assertEqual(unify_path('/Folder1'), [None, 'Folder1'])
-        self.assertEqual(unify_path('/Folder1/'), [None, 'Folder1'])
-        self.assertEqual(unify_path('/Folder1/Folder2/Folder3/'), [None, 'Folder1', 'Folder2', 'Folder3'])
+    def test_path_to_folders(self):
+        self.assertEqual(path_to_folders(None), [None])
+        self.assertEqual(path_to_folders(''), [None])
+        self.assertEqual(path_to_folders('/'), [None])
+        self.assertEqual(path_to_folders('/Folder1'), [None, 'Folder1'])
+        self.assertEqual(path_to_folders('/Folder1/'), [None, 'Folder1'])
+        self.assertEqual(path_to_folders('/Folder1/Folder2/Folder3/'), [None, 'Folder1', 'Folder2', 'Folder3'])
 
     def test_list_from_root(self):
         api = MagicMock()
@@ -121,6 +127,7 @@ class TestDlnaBrowser(unittest.TestCase):
 
         api.get_dms_list.assert_called_once_with(0, 20)
 
+        self.assertEqual(browser.get_path(), '/')
         self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
         self.assertEqual(browser[0].object_id, None)
@@ -137,6 +144,7 @@ class TestDlnaBrowser(unittest.TestCase):
         api.get_dms_list.assert_called_once_with(0, 20)
         api.pc_get_music_list_by_category.assert_called_once_with('uuid:00113249-398f-0011-8f39-8f3949321100', 0, 20)
 
+        self.assertEqual(browser.get_path(), '/NAS')
         self.assertEqual(len(browser), 3)
         self.assertIsInstance(browser[0], ContainerItem)
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
@@ -150,7 +158,7 @@ class TestDlnaBrowser(unittest.TestCase):
         api.pc_get_music_list_by_id.side_effect = pc_get_music_list_by_id_side_effect
 
         browser = DlnaBrowser(api)
-        browser = browser.list('/NAS/Music/By Folder/')
+        browser = browser.list('/NAS/Music/By Folder')
 
         api.get_dms_list.assert_called_once_with(0, 20)
         api.pc_get_music_list_by_category.assert_called_once_with('uuid:00113249-398f-0011-8f39-8f3949321100', 0, 20)
@@ -159,6 +167,7 @@ class TestDlnaBrowser(unittest.TestCase):
             call('uuid:00113249-398f-0011-8f39-8f3949321100', '22', 0, 20)
         ])
 
+        self.assertEqual(browser.get_path(), '/NAS/Music/By Folder')
         self.assertEqual(len(browser), 2)
         self.assertIsInstance(browser[0], AudioItem)
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
@@ -181,6 +190,7 @@ class TestDlnaBrowser(unittest.TestCase):
             call('uuid:00113249-398f-0011-8f39-8f3949321100', '22', 0, 20)
         ])
 
+        self.assertEqual(browser.get_path(), '/NAS/Music/By Folder')
         self.assertEqual(len(browser), 2)
         self.assertIsInstance(browser[0], AudioItem)
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
