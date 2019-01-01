@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 from unittest.mock import call
 
 from samsung_multiroom.browser import ContainerItem
-from samsung_multiroom.browser import RadioItem
 from samsung_multiroom.browser import TuneInBrowser
+from samsung_multiroom.browser import TuneInRadioItem
 
 
 def browser_main_return_value():
@@ -129,7 +129,7 @@ class TestTuneInBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/By Language/English/Music')
         self.assertEqual(len(browser), 2)
-        self.assertIsInstance(browser[0], RadioItem)
+        self.assertIsInstance(browser[0], TuneInRadioItem)
         self.assertEqual(browser[0].name, 'MSNBC')
         self.assertEqual(browser[0].object_id, '0')
 
@@ -150,6 +150,6 @@ class TestTuneInBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/By Language/English/Music')
         self.assertEqual(len(browser), 2)
-        self.assertIsInstance(browser[0], RadioItem)
+        self.assertIsInstance(browser[0], TuneInRadioItem)
         self.assertEqual(browser[0].name, 'MSNBC')
         self.assertEqual(browser[0].object_id, '0')
