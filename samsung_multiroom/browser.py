@@ -1,4 +1,5 @@
 """Browse media sources."""
+from .api import paginator
 
 
 class Browser:
@@ -94,16 +95,16 @@ class DlnaBrowser(Browser):
             # if we don't have device udn we search through devices
             if device_udn is None:
                 items = []
-                dms_list = self._api.get_dms_list(0, 20)
+                dms_list = paginator(self._api.get_dms_list, 0, 20)
 
                 for dms in dms_list:
                     items.append(dms_to_item(dms))
             else:
                 items = []
                 if parent_id is None:
-                    music_list = self._api.pc_get_music_list_by_category(device_udn, 0, 20)
+                    music_list = paginator(self._api.pc_get_music_list_by_category, device_udn, 0, 20)
                 else:
-                    music_list = self._api.pc_get_music_list_by_id(device_udn, parent_id, 0, 20)
+                    music_list = paginator(self._api.pc_get_music_list_by_id, device_udn, parent_id, 0, 20)
 
                 for music_item in music_list:
                     items.append(music_item_to_item(music_item))
@@ -145,13 +146,14 @@ class TuneInBrowser(Browser):
             # if we don't have device udn we search through devices
             if parent_id is None:
                 items = []
-                radio_list = self._api.browse_main(0, 30)
+                radio_list = paginator(self._api.browse_main, 0, 30)
 
                 for radio_item in radio_list:
                     items.append(radio_to_radio_item(radio_item))
             else:
                 items = []
-                radio_list = self._api.get_select_radio_list(parent_id, 0, 30)
+                radio_list = paginator(self._api.get_select_radio_list, self._api.get_current_radio_list, parent_id, 0,
+                                       30)
 
                 for radio_item in radio_list:
                     items.append(radio_to_radio_item(radio_item))

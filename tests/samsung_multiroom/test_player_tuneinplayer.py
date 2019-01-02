@@ -90,7 +90,10 @@ class TestTuneInPlayer(unittest.TestCase):
 
         api.set_playback_control.assert_called_once_with('pause')
 
-    def test_next(self):
+    @unittest.mock.patch('inspect.signature')
+    def test_next(self, signature):
+        signature.return_value = type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}})
+
         api = MagicMock()
         api.get_preset_list.return_value = get_preset_list_return_value()
         api.get_radio_info.return_value = get_radio_info_return_value()
@@ -98,12 +101,15 @@ class TestTuneInPlayer(unittest.TestCase):
         player = TuneInPlayer(api)
         player.next()
 
-        api.get_preset_list.assert_called_once_with(0, 10)
+        api.get_preset_list.assert_called_once_with(start_index=0, list_count=30)
         api.get_radio_info.assert_called_once()
         api.set_play_preset.assert_called_once_with(1, 1)
         api.set_select_radio.assert_called_once()
 
-    def test_previous(self):
+    @unittest.mock.patch('inspect.signature')
+    def test_previous(self, signature):
+        signature.return_value = type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}})
+
         api = MagicMock()
         api.get_preset_list.return_value = get_preset_list_return_value()
         api.get_radio_info.return_value = get_radio_info_return_value()
@@ -111,7 +117,7 @@ class TestTuneInPlayer(unittest.TestCase):
         player = TuneInPlayer(api)
         player.previous()
 
-        api.get_preset_list.assert_called_once_with(0, 10)
+        api.get_preset_list.assert_called_once_with(start_index=0, list_count=30)
         api.get_radio_info.assert_called_once()
         api.set_play_preset.assert_called_once_with(0, 4)
         api.set_select_radio.assert_called_once()

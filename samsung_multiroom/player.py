@@ -1,6 +1,8 @@
 """Player allows playback control depending on selected source."""
 import abc
 
+from .api import paginator
+
 
 class PlayerOperator:
     """Select the right player for the current source."""
@@ -216,8 +218,7 @@ class TuneInPlayer(Player):
         if direction not in [-1, 1]:
             raise ValueError('Direction must be either 1 or -1')
 
-        # todo: iterate beyond 10 elements
-        presets = self._api.get_preset_list(0, 10)
+        presets = list(paginator(self._api.get_preset_list, 0, 30))
         presets_count = len(presets)
 
         if presets_count <= 1:

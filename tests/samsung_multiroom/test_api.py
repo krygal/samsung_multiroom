@@ -10,6 +10,7 @@ from samsung_multiroom.api import COMMAND_UIC
 from samsung_multiroom.api import METHOD_GET
 from samsung_multiroom.api import SamsungMultiroomApi
 from samsung_multiroom.api import SamsungMultiroomApiException
+from samsung_multiroom.api import paginator
 
 
 class TestApi(unittest.TestCase):

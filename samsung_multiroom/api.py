@@ -256,6 +256,9 @@ class SamsungMultiroomApi:
             ('listcount', int(list_count)),
         ])
 
+        if not int(response['listcount']):
+            return []
+
         return response_list(response['presetlist']['preset'])
 
     def get_radio_info(self):
@@ -321,6 +324,9 @@ class SamsungMultiroomApi:
             ('listcount', int(list_count)),
         ])
 
+        if not int(response['listcount']):
+            return []
+
         return response_list(response['dmslist']['dms'])
 
     def pc_get_music_list_by_category(self, device_udn, start_index, list_count):
@@ -349,6 +355,9 @@ class SamsungMultiroomApi:
             ('liststartindex', int(start_index)),
             ('listcount', int(list_count)),
         ])
+
+        if not int(response['listcount']):
+            return []
 
         return response_list(response['musiclist']['music'])
 
@@ -379,6 +388,9 @@ class SamsungMultiroomApi:
             ('liststartindex', int(start_index)),
             ('listcount', int(list_count)),
         ])
+
+        if not int(response['listcount']):
+            return []
 
         return response_list(response['musiclist']['music'])
 
@@ -446,6 +458,9 @@ class SamsungMultiroomApi:
 
         response = self.get(COMMAND_CPM, 'BrowseMain', params)
 
+        if not int(response['listcount']):
+            return []
+
         return response_list(response['menulist']['menuitem'])
 
     def get_select_radio_list(self, content_id, start_index, list_count):
@@ -468,6 +483,9 @@ class SamsungMultiroomApi:
 
         response = self.get(COMMAND_CPM, 'GetSelectRadioList', params)
 
+        if not int(response['listcount']):
+            return []
+
         return response_list(response['menulist']['menuitem'])
 
     def get_current_radio_list(self, start_index, list_count):
@@ -485,6 +503,9 @@ class SamsungMultiroomApi:
 
         response = self.get(COMMAND_CPM, 'GetCurrentRadioList', params)
 
+        if not int(response['listcount']):
+            return []
+
         return response_list(response['menulist']['menuitem'])
 
     def get_upper_radio_list(self, start_index, list_count):
@@ -501,6 +522,9 @@ class SamsungMultiroomApi:
         ]
 
         response = self.get(COMMAND_CPM, 'GetUpperRadioList', params)
+
+        if not int(response['listcount']):
+            return []
 
         return response_list(response['menulist']['menuitem'])
 
@@ -543,3 +567,54 @@ def format_param(param):
         return '<p type="{0}" name="{1}" val="empty"><![CDATA[{2}]]></p>'.format(type_hint, name, value)
 
     return '<p type="{0}" name="{1}" val="{2}"/>'.format(type_hint, name, value)
+
+
+def paginator(*args):
+    """
+    Generator to paginate over api call.
+
+    Api method must accept start_index and list_count parameters.
+
+    :param: callable function to use for pagination
+    :param: optionally pass second function that will be used for subsequent pages
+    :param: pass all initial values that first callable function accepts, they will be replicated to a second callable
+    :returns: Iterable
+    """
+    if not callable(args[0]):
+        raise ValueError('First argument must be a function')
+
+    primary = args[0]
+    secondary = args[0]
+    args = args[1:]
+
+    if callable(args[0]):
+        secondary = args[0]
+        args = args[1:]
+
+    import inspect
+    primary_parameters = inspect.signature(primary).parameters.keys()
+    secondary_parameters = inspect.signature(secondary).parameters.keys()
+
+    # match primary_parameters with args
+    primary_kwargs = {}
+    secondary_kwargs = {}
+
+    for i, parameter in enumerate(primary_parameters):
+        primary_kwargs[parameter] = args[i]
+        if parameter in secondary_parameters:
+            secondary_kwargs[parameter] = args[i]
+
+    current = primary
+    current_kwargs = primary_kwargs
+    has_more = True
+
+    while has_more:
+        items = current(**current_kwargs)
+        for item in items:
+            yield item
+
+        has_more = len(items) >= current_kwargs['list_count']
+
+        current = secondary
+        current_kwargs = secondary_kwargs
+        current_kwargs['start_index'] = current_kwargs['start_index'] + current_kwargs['list_count']
