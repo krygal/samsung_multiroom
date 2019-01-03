@@ -119,7 +119,7 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(path_to_folders('/Folder1/Folder2/Folder3/'), [None, 'Folder1', 'Folder2', 'Folder3'])
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_from_root(self, signature):
+    def test_browse_from_root(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -129,7 +129,7 @@ class TestDlnaBrowser(unittest.TestCase):
         api.get_dms_list.return_value = get_dms_list_return_value()
 
         browser = DlnaBrowser(api)
-        browser = browser.list()
+        browser = browser.browse()
 
         api.get_dms_list.assert_called_once_with(start_index=0, list_count=20)
 
@@ -140,7 +140,7 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(browser[0].name, 'NAS')
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_second_level(self, signature):
+    def test_browse_second_level(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -153,7 +153,7 @@ class TestDlnaBrowser(unittest.TestCase):
         api.pc_get_music_list_by_category.return_value = pc_get_music_list_by_category_return_value()
 
         browser = DlnaBrowser(api)
-        browser = browser.list('/NAS/')
+        browser = browser.browse('/NAS/')
 
         api.get_dms_list.assert_called_once_with(start_index=0, list_count=20)
         api.pc_get_music_list_by_category.assert_called_once_with(device_udn='uuid:00113249-398f-0011-8f39-8f3949321100', start_index=0, list_count=20)
@@ -166,7 +166,7 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(browser[0].name, 'Music')
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_full_level(self, signature):
+    def test_browse_full_level(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -184,7 +184,7 @@ class TestDlnaBrowser(unittest.TestCase):
         api.pc_get_music_list_by_id.side_effect = pc_get_music_list_by_id_side_effect
 
         browser = DlnaBrowser(api)
-        browser = browser.list('/NAS/Music/By Folder')
+        browser = browser.browse('/NAS/Music/By Folder')
 
         api.get_dms_list.assert_called_once_with(start_index=0, list_count=20)
         api.pc_get_music_list_by_category.assert_called_once_with(device_udn='uuid:00113249-398f-0011-8f39-8f3949321100', start_index=0, list_count=20)
@@ -201,7 +201,7 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(browser[0].name, 'La femme d\'argent')
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_relative_path(self, signature):
+    def test_browse_relative_path(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -219,7 +219,7 @@ class TestDlnaBrowser(unittest.TestCase):
         api.pc_get_music_list_by_id.side_effect = pc_get_music_list_by_id_side_effect
 
         browser = DlnaBrowser(api)
-        browser = browser.list('/NAS/Music/').list('By Folder')
+        browser = browser.browse('/NAS/Music/').browse('By Folder')
 
         api.get_dms_list.assert_called_once_with(start_index=0, list_count=20)
         api.pc_get_music_list_by_category.assert_called_once_with(device_udn='uuid:00113249-398f-0011-8f39-8f3949321100', start_index=0, list_count=20)

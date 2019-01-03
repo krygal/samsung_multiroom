@@ -29,7 +29,7 @@ class Browser:
         """
         return self._path
 
-    def list(self, path=None):
+    def browse(self, path=None):
         """
         List items based on path.
 
@@ -56,7 +56,7 @@ class Browser:
         return len(self._items)
 
     def __iter__(self):
-        return self._items.copy()
+        return iter(self._items)
 
 
 class DlnaBrowser(Browser):
@@ -72,7 +72,7 @@ class DlnaBrowser(Browser):
     def get_name(self):
         return 'dlna'
 
-    def list(self, path=None):
+    def browse(self, path=None):
         folders = path_to_folders(path)
 
         device_udn = None
@@ -125,7 +125,7 @@ class TuneInBrowser(Browser):
     def get_name(self):
         return 'tunein'
 
-    def list(self, path=None):
+    def browse(self, path=None):
         folders = path_to_folders(path)
 
         parent_id = None

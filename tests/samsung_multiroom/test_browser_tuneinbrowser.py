@@ -98,7 +98,7 @@ def get_select_radio_list_side_effect(content_id, start_index, list_count):
 class TestTuneInBrowser(unittest.TestCase):
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_from_root(self, signature):
+    def test_browse_from_root(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -108,7 +108,7 @@ class TestTuneInBrowser(unittest.TestCase):
         api.browse_main.return_value = browser_main_return_value()
 
         browser = TuneInBrowser(api)
-        browser = browser.list()
+        browser = browser.browse()
 
         api.browse_main.assert_called_once_with(start_index=0, list_count=30)
 
@@ -119,7 +119,7 @@ class TestTuneInBrowser(unittest.TestCase):
         self.assertEqual(browser[0].object_id, '0')
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_full_level(self, signature):
+    def test_browse_full_level(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -136,7 +136,7 @@ class TestTuneInBrowser(unittest.TestCase):
         api.get_select_radio_list.side_effect = get_select_radio_list_side_effect
 
         browser = TuneInBrowser(api)
-        browser = browser.list('/By Language/English/Music')
+        browser = browser.browse('/By Language/English/Music')
 
         api.browse_main.assert_called_once_with(start_index=0, list_count=30)
         api.get_select_radio_list.assert_has_calls([
@@ -152,7 +152,7 @@ class TestTuneInBrowser(unittest.TestCase):
         self.assertEqual(browser[0].object_id, '0')
 
     @unittest.mock.patch('inspect.signature')
-    def test_list_relative(self, signature):
+    def test_browse_relative(self, signature):
         signature.side_effect = [
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
             type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
@@ -169,7 +169,7 @@ class TestTuneInBrowser(unittest.TestCase):
         api.get_select_radio_list.side_effect = get_select_radio_list_side_effect
 
         browser = TuneInBrowser(api)
-        browser = browser.list('/By Language/English').list('Music')
+        browser = browser.browse('/By Language/English').browse('Music')
 
         api.browse_main.assert_called_once_with(start_index=0, list_count=30)
         api.get_select_radio_list.assert_has_calls([
