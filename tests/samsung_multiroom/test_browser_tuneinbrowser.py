@@ -2,9 +2,8 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import call
 
-from samsung_multiroom.browser import ContainerItem
+from samsung_multiroom.browser import Item
 from samsung_multiroom.browser import TuneInBrowser
-from samsung_multiroom.browser import TuneInRadioItem
 
 
 def browser_main_return_value():
@@ -114,9 +113,10 @@ class TestTuneInBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/')
         self.assertEqual(len(browser), 5)
-        self.assertIsInstance(browser[0], ContainerItem)
+        self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].name, 'Favorites')
         self.assertEqual(browser[0].object_id, '0')
+        self.assertEqual(browser[0].object_type, 'container')
 
     @unittest.mock.patch('inspect.signature')
     def test_browse_full_level(self, signature):
@@ -147,9 +147,10 @@ class TestTuneInBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/By Language/English/Music')
         self.assertEqual(len(browser), 2)
-        self.assertIsInstance(browser[0], TuneInRadioItem)
+        self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].name, 'MSNBC')
         self.assertEqual(browser[0].object_id, '0')
+        self.assertEqual(browser[0].object_type, 'tunein_radio')
 
     @unittest.mock.patch('inspect.signature')
     def test_browse_relative(self, signature):
@@ -180,6 +181,7 @@ class TestTuneInBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/By Language/English/Music')
         self.assertEqual(len(browser), 2)
-        self.assertIsInstance(browser[0], TuneInRadioItem)
+        self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].name, 'MSNBC')
         self.assertEqual(browser[0].object_id, '0')
+        self.assertEqual(browser[0].object_type, 'tunein_radio')

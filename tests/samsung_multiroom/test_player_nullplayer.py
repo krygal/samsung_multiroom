@@ -1,9 +1,14 @@
 import unittest
+from unittest.mock import MagicMock
 
 from samsung_multiroom.player import NullPlayer
 
 
 class TestNullPlayer(unittest.TestCase):
+
+    def test_play(self):
+        player = NullPlayer()
+        self.assertFalse(player.play(MagicMock()))
 
     def test_resume(self):
         player = NullPlayer()

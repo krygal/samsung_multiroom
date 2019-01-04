@@ -4,7 +4,67 @@ import abc
 from .api import paginator
 
 
-class PlayerOperator:
+class Player(metaclass=abc.ABCMeta):
+    """Controls playback functions."""
+
+    @abc.abstractmethod
+    def play(self, playlist):
+        """
+        Enqueue and play a playlist.
+
+        Player may choose to not play the playlist if it's not compatible with this player. For instance you can't
+        play DLNA source tracks using TuneIn player. If player is unable to play the playlist it must return False.
+
+        :param playlist: Iterable returning player combatible objects
+        :returns: True if playlist was accepted, False otherwise
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def resume(self):
+        """Play/resume current track."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def stop(self):
+        """Stop current track and reset position to the beginning."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def pause(self):
+        """Pause current track and retain position."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def next(self):
+        """Play next track in the queue."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def previous(self):
+        """Play previous track in the queue."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_current_track(self):
+        """
+        Get current track info.
+
+        :returns: Track instance, or None if unavailable
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def is_supported(self, function, submode=None):
+        """
+        Check if this player supports function/submode.
+
+        :returns: Boolean True if function/submode is supported
+        """
+        raise NotImplementedError()
+
+
+class PlayerOperator(Player):
     """Select the right player for the current source."""
 
     def __init__(self, api, players=None):
@@ -48,52 +108,58 @@ class PlayerOperator:
 
         return NullPlayer()
 
+    def play(self, playlist):
+        """
+        Find a suitable player and play a playlist.
 
-class Player(metaclass=abc.ABCMeta):
-    """Controls playback functions."""
+        :param playlist: Iterable returning player combatible objects
+        :returns: True if playlist was accepted, False otherwise
+        """
+        for player in self._players:
+            if player.play(playlist):
+                return True
 
-    @abc.abstractmethod
+        return False
+
     def resume(self):
         """Play/resume current track."""
-        raise NotImplementedError()
+        self.get_player().resume()
 
-    @abc.abstractmethod
     def stop(self):
         """Stop current track and reset position to the beginning."""
-        raise NotImplementedError()
+        self.get_player().stop()
 
-    @abc.abstractmethod
     def pause(self):
         """Pause current track and retain position."""
-        raise NotImplementedError()
+        self.get_player().pause()
 
-    @abc.abstractmethod
     def next(self):
         """Play next track in the queue."""
-        raise NotImplementedError()
+        self.get_player().next()
 
-    @abc.abstractmethod
     def previous(self):
         """Play previous track in the queue."""
-        raise NotImplementedError()
+        self.get_player().previous()
 
-    @abc.abstractmethod
     def get_current_track(self):
         """
         Get current track info.
 
         :returns: Track instance, or None if unavailable
         """
-        raise NotImplementedError()
+        return self.get_player().get_current_track()
 
-    @abc.abstractmethod
     def is_supported(self, function, submode=None):
         """
         Check if this player supports function/submode.
 
         :returns: Boolean True if function/submode is supported
         """
-        raise NotImplementedError()
+        for player in self._players:
+            if player.is_supported(function, submode):
+                return True
+
+        return False
 
 
 class DlnaPlayer(Player):
@@ -101,6 +167,40 @@ class DlnaPlayer(Player):
 
     def __init__(self, api):
         self._api = api
+
+    def play(self, playlist):
+        """
+        Enqueue and play a playlist.
+
+        Playlist items must be an object with following attributes:
+        - object_id - object id
+        - object_type - must be 'dlna_audio'
+        - title - track title
+        - artist - track artist
+        - thumbnail_url - thumbnail URL
+        - device_udn - DLNA device UDN
+
+        :param playlist: Iterable returning player combatible objects
+        :returns: True if playlist was accepted, False otherwise
+        """
+        items = []
+        for track in playlist:
+            if track.object_type not in ['dlna_audio']:
+                continue
+
+            items.append({
+                'object_id': track.object_id,
+                'title': track.title,
+                'artist': track.artist,
+                'thumbnail': track.thumbnail_url,
+                'device_udn': track.device_udn,
+            })
+
+        if items:
+            self._api.set_playlist_playback_control(items)
+            return True
+
+        return False
 
     def resume(self):
         """Play/resume current track."""
@@ -130,7 +230,18 @@ class DlnaPlayer(Player):
         """
         music_info = self._api.get_music_info()
 
-        track_kwargs = {}
+        track_kwargs = {
+            'title': None,
+            'artist': None,
+            'album': None,
+            'duration': None,
+            'position': None,
+            'thumbnail_url': None,
+            'metadata': {
+                'object_id': None,
+                'object_type': 'dlna_audio',
+            }
+        }
 
         if 'title' in music_info:
             track_kwargs['title'] = music_info['title']
@@ -145,6 +256,10 @@ class DlnaPlayer(Player):
             track_kwargs['duration'] = int(hours) * 3600 + int(minutes) * 60 + int(float(seconds))
         if 'playtime' in music_info:
             track_kwargs['position'] = int(int(music_info['playtime']) / 1000)
+        if 'device_udn' in music_info:
+            track_kwargs['metadata']['device_udn'] = music_info['device_udn']
+        if 'objectid' in music_info:
+            track_kwargs['metadata']['object_id'] = music_info['objectid']
 
         return Track(**track_kwargs)
 
@@ -162,6 +277,27 @@ class TuneInPlayer(Player):
 
     def __init__(self, api):
         self._api = api
+
+    def play(self, playlist):
+        """
+        Play first radio from a playlist.
+
+        Playlist items must be an object with following attributes:
+        - object_id - object id
+        - object_type - must be 'tunein_radio'
+        - title - radio name
+
+        :param playlist: Playlist instance
+        :returns: True if playlist was accepted, False otherwise
+        """
+        for radio in playlist:
+            if radio.object_type not in ['tunein_radio']:
+                continue
+
+            self._api.set_play_select(radio.object_id)
+            return True
+
+        return False
 
     def resume(self):
         """Play/resume current track."""
@@ -191,7 +327,18 @@ class TuneInPlayer(Player):
         """
         radio_info = self._api.get_radio_info()
 
-        track_kwargs = {}
+        track_kwargs = {
+            'title': None,
+            'artist': None,
+            'album': None,
+            'duration': None,
+            'position': None,
+            'thumbnail_url': None,
+            'metadata': {
+                'object_id': None,
+                'object_type': 'tunein_radio',
+            }
+        }
 
         if 'title' in radio_info:
             track_kwargs['artist'] = radio_info['title']
@@ -199,10 +346,6 @@ class TuneInPlayer(Player):
             track_kwargs['title'] = radio_info['description']
         if 'thumbnail' in radio_info and 'http' in radio_info['thumbnail']:
             track_kwargs['thumbnail_url'] = radio_info['thumbnail']
-
-        track_kwargs['album'] = None
-        track_kwargs['duration'] = None
-        track_kwargs['position'] = None
 
         return Track(**track_kwargs)
 
@@ -247,6 +390,15 @@ class TuneInPlayer(Player):
 class NullPlayer(Player):
     """Catch all player if no others supported current function."""
 
+    def play(self, playlist):
+        """
+        Null player is unable to play anything.
+
+        :param playlist: Playlist instance
+        :returns: Boolean False
+        """
+        return False
+
     def resume(self):
         """Do nothing."""
 
@@ -282,13 +434,14 @@ class NullPlayer(Player):
 class Track:
     """Defines a media track on the playlist."""
 
-    def __init__(self, title, artist, album, duration, position, thumbnail_url):
+    def __init__(self, title, artist, album, duration, position, thumbnail_url, metadata=None):
         self._title = title
+        self._artist = artist
         self._album = album
         self._duration = duration
-        self._artist = artist
         self._position = position
         self._thumbnail_url = thumbnail_url
+        self._metadata = metadata or {}
 
     @property
     def title(self):
@@ -331,3 +484,12 @@ class Track:
         :returns: URL of the track thumbnail
         """
         return self._thumbnail_url
+
+    def __getattr__(self, name):
+        """
+        :returns: Metadata item value
+        """
+        if name in self._metadata:
+            return self._metadata[name]
+
+        return None

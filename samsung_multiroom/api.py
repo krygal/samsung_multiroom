@@ -60,7 +60,7 @@ class SamsungMultiroomApi:
             try:
                 dict_response = xmltodict.parse(response.text)
             except Exception:
-                _LOGGER.error('Failed to parse a resopnse %s', response.text, exc_info=1)
+                _LOGGER.error('Failed to parse a response %s', response.text, exc_info=1)
                 raise SamsungMultiroomApiException('Received invalid response {0}'.format(response.text))
 
             # for some requests speaker returns command in response that does not match request command
@@ -402,7 +402,7 @@ class SamsungMultiroomApi:
 
         :param items: List of dicts:
             - device_udn
-            - objectid
+            - object_id
             - title - song title
             - artist - song artist
             - thumbnail - URL
@@ -425,7 +425,7 @@ class SamsungMultiroomApi:
                 item['thumbnail'] = ''
 
             params.append(('device_udn', item['device_udn']))
-            params.append(('objectid', item['objectid']))
+            params.append(('objectid', item['object_id']))
             params.append(('songtitle', item['title'], 'cdata'))
             params.append(('thumbnail', item['thumbnail'], 'cdata'))
             params.append(('artist', item['artist'], 'cdata'))
@@ -527,6 +527,17 @@ class SamsungMultiroomApi:
             return []
 
         return response_list(response['menulist']['menuitem'])
+
+    def set_play_select(self, content_id):
+        """
+        Plays selected radio.
+
+        :param content_id: Content id as returned by get_upper_radio_list(), get_select_radio_list() or
+            get_current_radio_list()
+        """
+        params = [('selectitemid', int(content_id))]
+
+        self.get(COMMAND_CPM, 'SetPlaySelect', params)
 
 
 def on_off_bool(value):

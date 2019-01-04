@@ -840,7 +840,7 @@ class TestApi(unittest.TestCase):
         items = [
             {
                 'device_udn': 'uuid:00113249-398f-0011-8f39-8f3949321100',
-                'objectid': '22$@52942',
+                'object_id': '22$@52942',
                 'title': 'Sexy boy',
                 'thumbnail': 'http://192.168.1.111:50002/transcoder/jpegtnscaler.cgi/folderart/52941.jpg',
                 'artist': 'Air',
@@ -1144,3 +1144,24 @@ class TestApi(unittest.TestCase):
             'title': 'Aboriginal',
             'contentid': '0',
         })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_play_select(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetPlaySelect%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22selectitemid%22%20val%3D%220%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>StopPlaybackEvent</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <playtime>131</playtime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_play_select('0')

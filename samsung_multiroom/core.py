@@ -106,7 +106,7 @@ class Speaker:
 
         :returns: Player instance
         """
-        return self._player_operator.get_player()
+        return self._player_operator
 
     def get_browser(self, name):
         """

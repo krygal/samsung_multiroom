@@ -129,7 +129,7 @@ class TestSpeaker(unittest.TestCase):
         speaker = Speaker(api, player_operator)
         player = speaker.get_player()
 
-        self.assertEqual(player, player1)
+        self.assertEqual(player, player_operator)
 
     def test_get_browser(self):
         api = MagicMock()

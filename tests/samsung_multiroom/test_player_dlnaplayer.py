@@ -6,6 +6,79 @@ from samsung_multiroom.player import DlnaPlayer
 
 class TestDlnaPlayer(unittest.TestCase):
 
+    def test_play(self):
+        api = MagicMock()
+        playlist = [
+            type('Item', (object, ), {
+                'object_id': 'id1',
+                'object_type': 'some_type',
+                'title': 'title 1',
+            }),
+            type('Item', (object, ), {
+                'device_udn': 'device_udn',
+                'object_id': 'id2',
+                'object_type': 'dlna_audio',
+                'title': 'track 2',
+                'artist': 'artist 2',
+                'thumbnail_url': 'thumb 2'
+            }),
+            type('Item', (object, ), {
+                'device_udn': 'device_udn',
+                'object_id': 'id3',
+                'object_type': 'dlna_audio',
+                'title': 'track 3',
+                'artist': 'artist 3',
+                'thumbnail_url': 'thumb 3'
+            }),
+            type('Item', (object, ), {
+                'object_id': 'id4',
+                'object_type': 'some_type2',
+                'title': 'title 4',
+            })
+        ]
+
+        player = DlnaPlayer(api)
+        self.assertTrue(player.play(playlist))
+
+        items = [
+            {
+                'device_udn': 'device_udn',
+                'object_id': 'id2',
+                'title': 'track 2',
+                'artist': 'artist 2',
+                'thumbnail': 'thumb 2'
+            },
+            {
+                'device_udn': 'device_udn',
+                'object_id': 'id3',
+                'title': 'track 3',
+                'artist': 'artist 3',
+                'thumbnail': 'thumb 3'
+            }
+        ]
+
+        api.set_playlist_playback_control.assert_called_once_with(items)
+
+    def test_play_returns_false_for_unsupported_playlist(self):
+        api = MagicMock()
+        playlist = [
+            type('Item', (object, ), {
+                'object_id': 'id1',
+                'object_type': 'some_type',
+                'title': 'title 1',
+            }),
+            type('Item', (object, ), {
+                'object_id': 'id4',
+                'object_type': 'some_type2',
+                'title': 'title 4',
+            })
+        ]
+
+        player = DlnaPlayer(api)
+        self.assertFalse(player.play(playlist))
+
+        api.set_playlist_playback_control.assert_not_called()
+
     def test_resume(self):
         api = MagicMock()
 
@@ -77,6 +150,9 @@ class TestDlnaPlayer(unittest.TestCase):
         self.assertEqual(track.duration, 340)
         self.assertEqual(track.position, 325)
         self.assertEqual(track.thumbnail_url, 'http://192.168.1.111:50002/transcoder/jpegtnscaler.cgi/folderart/52947.jpg')
+        self.assertEqual(track.device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
+        self.assertEqual(track.object_id, '22$@52947')
+        self.assertEqual(track.object_type, 'dlna_audio')
 
     def test_is_supported(self):
         api = MagicMock()

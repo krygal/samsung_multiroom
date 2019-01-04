@@ -67,6 +67,58 @@ def get_radio_info_return_value():
 
 class TestTuneInPlayer(unittest.TestCase):
 
+    def test_play(self):
+        playlist = [
+            type('Item', (object, ), {
+                'object_id': '1',
+                'object_type': 'some_type',
+                'title': 'title 1',
+            }),
+            type('Item', (object, ), {
+                'object_id': '2',
+                'object_type': 'tunein_radio',
+                'title': 'radio 2',
+            }),
+            type('Item', (object, ), {
+                'object_id': '3',
+                'object_type': 'tunein_radio',
+                'title': 'radio 3',
+            }),
+            type('Item', (object, ), {
+                'object_id': '4',
+                'object_type': 'some_type2',
+                'title': 'title 4',
+            })
+        ]
+
+        api = MagicMock()
+
+        player = TuneInPlayer(api)
+        self.assertTrue(player.play(playlist))
+
+        api.set_play_select.assert_called_once_with('2')
+
+    def test_play_returns_false_for_unsupported_playlist(self):
+        playlist = [
+            type('Item', (object, ), {
+                'object_id': '1',
+                'object_type': 'some_type',
+                'title': 'title 1',
+            }),
+            type('Item', (object, ), {
+                'object_id': '4',
+                'object_type': 'some_type2',
+                'title': 'title 4',
+            })
+        ]
+
+        api = MagicMock()
+
+        player = TuneInPlayer(api)
+        self.assertFalse(player.play(playlist))
+
+        api.set_play_select.assert_not_called()
+
     def test_resume(self):
         api = MagicMock()
 
@@ -137,6 +189,8 @@ class TestTuneInPlayer(unittest.TestCase):
         self.assertEqual(track.duration, None)
         self.assertEqual(track.position, None)
         self.assertEqual(track.thumbnail_url, 'http://radio1.org/thumbnail.png')
+        self.assertEqual(track.object_id, None)
+        self.assertEqual(track.object_type, 'tunein_radio')
 
     def test_is_supported(self):
         api = MagicMock()

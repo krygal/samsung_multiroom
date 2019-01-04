@@ -88,7 +88,7 @@ class DlnaBrowser(Browser):
             # locate prepopulated items matching folder
             for item in items:
                 if item.name == folder:
-                    device_udn = item.metadata['device_udn']
+                    device_udn = item.device_udn
                     parent_id = item.object_id
                     break
 
@@ -166,8 +166,9 @@ class Item:
     Immutable browser item.
     """
 
-    def __init__(self, object_id, name, metadata=None):
+    def __init__(self, object_id, object_type, name, metadata=None):
         self._object_id = object_id
+        self._object_type = object_type
         self._name = name
         self._metadata = metadata or {}
 
@@ -179,11 +180,28 @@ class Item:
         return self._object_id
 
     @property
+    def object_type(self):
+        """
+        :returns: Object type
+        """
+        return self._object_type
+
+    @property
     def name(self):
         """
         :returns: Item name
         """
         return self._name
+
+    @property
+    def title(self):
+        """
+        :returns: Item title, equivallent of name
+        """
+        if 'title' in self._metadata:
+            return self._metadata['title']
+
+        return self.name
 
     @property
     def metadata(self):
@@ -192,23 +210,16 @@ class Item:
         """
         return self._metadata
 
+    def __getattr__(self, name):
+        """
+        Look up name in metadata.
 
-class ContainerItem(Item):
-    """
-    Container item.
-    """
+        :returns: Metadata value
+        """
+        if name in self._metadata:
+            return self._metadata[name]
 
-
-class DlnaAudioItem(Item):
-    """
-    Audio item.
-    """
-
-
-class TuneInRadioItem(Item):
-    """
-    Radio item.
-    """
+        return None
 
 
 def path_to_folders(path):
@@ -255,13 +266,14 @@ def dms_to_item(dms):
     :param dms: Dms dict to convert
     :returns: Item instance
     """
-    return ContainerItem(
+    return Item(
         object_id=None,
+        object_type='container',
         name=dms['dmsname'],
         metadata={
             'device_udn': dms['dmsid'],
             'device_type': dms['devicetype'],
-            'thumbnail': dms['thumbnail_JPG_LRG'],
+            'thumbnail_url': dms['thumbnail_JPG_LRG'],
         })
 
 
@@ -271,20 +283,22 @@ def music_item_to_item(music_item):
     :returns: Item instance
     """
     if music_item['type'] == 'CONTAINER':
-        return ContainerItem(
+        return Item(
             object_id=music_item['@object_id'],
+            object_type='container',
             name=music_item['title'],
             metadata={'device_udn': music_item['device_udn']})
     if music_item['type'] == 'AUDIO':
         (hours, minutes, seconds) = music_item['timelength'].split(':')
-        return DlnaAudioItem(
+        return Item(
             object_id=music_item['@object_id'],
+            object_type='dlna_audio',
             name=music_item['title'],
             metadata={
                 'device_udn': music_item['device_udn'],
                 'artist': music_item['artist'],
                 'album': music_item['album'],
-                'thumbnail': music_item['thumbnail'],
+                'thumbnail_url': music_item['thumbnail'],
                 'duration': int(hours) * 3600 + int(minutes) * 60 + int(float(seconds))
             })
 
@@ -297,8 +311,8 @@ def radio_to_radio_item(radio):
     :returns: Item instance
     """
     if radio['@type'] == '0':
-        return ContainerItem(object_id=radio['contentid'], name=radio['title'])
+        return Item(object_id=radio['contentid'], object_type='container', name=radio['title'])
     if radio['@type'] == '2':
-        return TuneInRadioItem(object_id=radio['contentid'], name=radio['title'])
+        return Item(object_id=radio['contentid'], object_type='tunein_radio', name=radio['title'])
 
     raise ValueError('Unsupported radio item type {0}'.format(radio['@type']))

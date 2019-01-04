@@ -2,8 +2,6 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import call
 
-from samsung_multiroom.browser import ContainerItem
-from samsung_multiroom.browser import DlnaAudioItem
 from samsung_multiroom.browser import DlnaBrowser
 from samsung_multiroom.browser import Item
 from samsung_multiroom.browser import path_to_folders
@@ -135,9 +133,10 @@ class TestDlnaBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/')
         self.assertIsInstance(browser[0], Item)
-        self.assertEqual(browser[0].metadata['device_udn'], 'uuid:00113249-398f-0011-8f39-8f3949321100')
         self.assertEqual(browser[0].object_id, None)
+        self.assertEqual(browser[0].object_type, 'container')
         self.assertEqual(browser[0].name, 'NAS')
+        self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
 
     @unittest.mock.patch('inspect.signature')
     def test_browse_second_level(self, signature):
@@ -160,10 +159,11 @@ class TestDlnaBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/NAS')
         self.assertEqual(len(browser), 3)
-        self.assertIsInstance(browser[0], ContainerItem)
-        self.assertEqual(browser[0].metadata['device_udn'], 'uuid:00113249-398f-0011-8f39-8f3949321100')
+        self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].object_id, '21')
+        self.assertEqual(browser[0].object_type, 'container')
         self.assertEqual(browser[0].name, 'Music')
+        self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
 
     @unittest.mock.patch('inspect.signature')
     def test_browse_full_level(self, signature):
@@ -195,10 +195,11 @@ class TestDlnaBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/NAS/Music/By Folder')
         self.assertEqual(len(browser), 2)
-        self.assertIsInstance(browser[0], DlnaAudioItem)
-        self.assertEqual(browser[0].metadata['device_udn'], 'uuid:00113249-398f-0011-8f39-8f3949321100')
+        self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].object_id, '22$@52941')
+        self.assertEqual(browser[0].object_type, 'dlna_audio')
         self.assertEqual(browser[0].name, 'La femme d\'argent')
+        self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
 
     @unittest.mock.patch('inspect.signature')
     def test_browse_relative_path(self, signature):
@@ -230,7 +231,8 @@ class TestDlnaBrowser(unittest.TestCase):
 
         self.assertEqual(browser.get_path(), '/NAS/Music/By Folder')
         self.assertEqual(len(browser), 2)
-        self.assertIsInstance(browser[0], DlnaAudioItem)
-        self.assertEqual(browser[0].metadata['device_udn'], 'uuid:00113249-398f-0011-8f39-8f3949321100')
+        self.assertIsInstance(browser[0], Item)
         self.assertEqual(browser[0].object_id, '22$@52941')
+        self.assertEqual(browser[0].object_type, 'dlna_audio')
         self.assertEqual(browser[0].name, 'La femme d\'argent')
+        self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
