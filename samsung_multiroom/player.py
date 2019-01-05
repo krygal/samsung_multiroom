@@ -21,6 +21,15 @@ class Player(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def jump(self, time):
+        """
+        Advance current playback to specific time.
+
+        :param time: Time from the beginning of the track in seconds
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def resume(self):
         """Play/resume current track."""
         raise NotImplementedError()
@@ -121,6 +130,14 @@ class PlayerOperator(Player):
 
         return False
 
+    def jump(self, time):
+        """
+        Advance current playback to specific time.
+
+        :param time: Time from the beginning of the track in seconds
+        """
+        self.get_player().jump(time)
+
     def resume(self):
         """Play/resume current track."""
         self.get_player().resume()
@@ -201,6 +218,14 @@ class DlnaPlayer(Player):
             return True
 
         return False
+
+    def jump(self, time):
+        """
+        Advance current playback to specific time.
+
+        :param time: Time from the beginning of the track in seconds
+        """
+        self._api.set_search_time(time)
 
     def resume(self):
         """Play/resume current track."""
@@ -298,6 +323,13 @@ class TuneInPlayer(Player):
             return True
 
         return False
+
+    def jump(self, time):
+        """
+        Not supported for radios.
+
+        :param time: Time from the beginning of the track in seconds
+        """
 
     def resume(self):
         """Play/resume current track."""
@@ -398,6 +430,9 @@ class NullPlayer(Player):
         :returns: Boolean False
         """
         return False
+
+    def jump(self, time):
+        """Do nothing."""
 
     def resume(self):
         """Do nothing."""

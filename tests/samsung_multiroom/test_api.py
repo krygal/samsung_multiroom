@@ -449,6 +449,28 @@ class TestApi(unittest.TestCase):
         })
 
     @httpretty.activate(allow_net_connect=False)
+    def test_set_search_time(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetSearchTime%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22playtime%22%20val%3D%2250%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>MusicPlayTime</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <timelength>431</timelength>
+                        <playtime>50</playtime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_search_time(50)
+
+    @httpretty.activate(allow_net_connect=False)
     def test_get_preset_list(self):
         httpretty.register_uri(
             httpretty.GET,

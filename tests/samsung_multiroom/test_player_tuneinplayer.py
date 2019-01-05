@@ -119,6 +119,14 @@ class TestTuneInPlayer(unittest.TestCase):
 
         api.set_play_select.assert_not_called()
 
+    def test_jump(self):
+        api = MagicMock()
+
+        player = TuneInPlayer(api)
+        player.jump(50)
+
+        api.set_search_time.assert_not_called()
+
     def test_resume(self):
         api = MagicMock()
 

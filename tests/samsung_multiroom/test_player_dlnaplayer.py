@@ -79,6 +79,14 @@ class TestDlnaPlayer(unittest.TestCase):
 
         api.set_playlist_playback_control.assert_not_called()
 
+    def test_jump(self):
+        api = MagicMock()
+
+        player = DlnaPlayer(api)
+        player.jump(50)
+
+        api.set_search_time.assert_called_once_with(50)
+
     def test_resume(self):
         api = MagicMock()
 

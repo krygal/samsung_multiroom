@@ -238,6 +238,18 @@ class SamsungMultiroomApi:
         """
         return self.get(COMMAND_UIC, 'GetPlayStatus')
 
+    def set_search_time(self, play_time):
+        """
+        Set current track to play from a specific time.
+
+        API call will fail unless track is currently played.
+
+        Setting play time further than length of the track ends the current track and plays next from the beginning.
+
+        :play_time: play time in seconds
+        """
+        self.get(COMMAND_UIC, 'SetSearchTime', [('playtime', int(play_time))])
+
     def get_preset_list(self, start_index, list_count):
         """
         Get list of predefined radios.

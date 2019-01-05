@@ -10,6 +10,10 @@ class TestNullPlayer(unittest.TestCase):
         player = NullPlayer()
         self.assertFalse(player.play(MagicMock()))
 
+    def test_jump(self):
+        player = NullPlayer()
+        player.jump(50)
+
     def test_resume(self):
         player = NullPlayer()
         player.resume()

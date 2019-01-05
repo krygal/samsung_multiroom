@@ -102,6 +102,13 @@ class TestPlayerOperator(unittest.TestCase):
         player2.play.assert_called_once_with(playlist)
         player3.play.assert_called_once_with(playlist)
 
+    def test_jump(self):
+        player_operator, api, players = get_mocks()
+        player_operator.jump(50)
+
+        players[0].jump.assert_not_called()
+        players[1].jump.assert_called_once_with(50)
+
     def test_resume(self):
         player_operator, api, players = get_mocks()
         player_operator.resume()
