@@ -1165,3 +1165,224 @@ class TestApi(unittest.TestCase):
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.set_play_select('0')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_7band_eq_list(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGet7BandEQList%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>7BandEQList</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <listcount>5</listcount>
+                        <presetlistcount>4</presetlistcount>
+                        <presetlist>
+                            <preset index="0">
+                                <presetindex>0</presetindex>
+                                <presetname>None</presetname>
+                            </preset>
+                            <preset index="1">
+                                <presetindex>1</presetindex>
+                                <presetname>Pop</presetname>
+                            </preset>
+                            <preset index="2">
+                                <presetindex>2</presetindex>
+                                <presetname>Jazz</presetname>
+                            </preset>
+                            <preset index="3">
+                                <presetindex>3</presetindex>
+                                <presetname>Classic</presetname>
+                            </preset>
+                            <preset index="4">
+                                <presetindex>4</presetindex>
+                                <presetname>customtitle</presetname>
+                            </preset>
+                        </presetlist>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        presets = api.get_7band_eq_list()
+
+        self.assertEqual(len(presets), 5)
+        self.assertEqual(presets[0], {
+            '@index': '0',
+            'presetindex': '0',
+            'presetname': 'None'
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_current_eq_mode(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetCurrentEQMode%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>CurrentEQMode</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <presetindex>3</presetindex>
+                        <presetname>Classic</presetname>
+                        <eqvalue1>2</eqvalue1>
+                        <eqvalue2>0</eqvalue2>
+                        <eqvalue3>0</eqvalue3>
+                        <eqvalue4>5</eqvalue4>
+                        <eqvalue5>0</eqvalue5>
+                        <eqvalue6>1</eqvalue6>
+                        <eqvalue7>0</eqvalue7>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        equalizer = api.get_current_eq_mode()
+
+        self.assertEqual(equalizer, {
+            'presetindex': '3',
+            'presetname': 'Classic',
+            'eqvalue1': '2',
+            'eqvalue2': '0',
+            'eqvalue3': '0',
+            'eqvalue4': '5',
+            'eqvalue5': '0',
+            'eqvalue6': '1',
+            'eqvalue7': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_7band_eq_value(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESet7bandEQValue%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22presetindex%22%20val%3D%224%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue1%22%20val%3D%221%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue2%22%20val%3D%222%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue3%22%20val%3D%223%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue4%22%20val%3D%224%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue5%22%20val%3D%225%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue6%22%20val%3D%226%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue7%22%20val%3D%22-6%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>7bandEQValue</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <presetindex>4</presetindex>
+                        <eqvalue1>1</eqvalue1>
+                        <eqvalue2>2</eqvalue2>
+                        <eqvalue3>3</eqvalue3>
+                        <eqvalue4>4</eqvalue4>
+                        <eqvalue5>5</eqvalue5>
+                        <eqvalue6>6</eqvalue6>
+                        <eqvalue7>-6</eqvalue7>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_7band_eq_value(4, [1,2,3,4,5,6,-6])
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_7band_eq_mode(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESet7bandEQMode%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22presetindex%22%20val%3D%221%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>7bandEQMode</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <presetindex>1</presetindex>
+                        <presetname>Pop</presetname>
+                        <eqvalue1>0</eqvalue1>
+                        <eqvalue2>-3</eqvalue2>
+                        <eqvalue3>3</eqvalue3>
+                        <eqvalue4>1</eqvalue4>
+                        <eqvalue5>-5</eqvalue5>
+                        <eqvalue6>0</eqvalue6>
+                        <eqvalue7>0</eqvalue7>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_7band_eq_mode(1)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_reset_7band_eq_value(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EReset7bandEQValue%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22presetindex%22%20val%3D%221%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue1%22%20val%3D%221%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue2%22%20val%3D%222%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue3%22%20val%3D%223%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue4%22%20val%3D%224%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue5%22%20val%3D%225%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue6%22%20val%3D%226%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22eqvalue7%22%20val%3D%22-6%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>Reset7bandEQValue</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <presetindex>1</presetindex>
+                        <eqvalue1>1</eqvalue1>
+                        <eqvalue2>2</eqvalue2>
+                        <eqvalue3>3</eqvalue3>
+                        <eqvalue4>4</eqvalue4>
+                        <eqvalue5>5</eqvalue5>
+                        <eqvalue6>6</eqvalue6>
+                        <eqvalue7>-6</eqvalue7>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.reset_7band_eq_value(1, [1,2,3,4,5,6,-6])
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_del_custom_eq_mode(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EDelCustomEQMode%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22presetindex%22%20val%3D%225%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>DelCustomEQMode</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <presetindex>5</presetindex>
+                        <presetname>Custom 2</presetname>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.del_custom_eq_mode(5)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_add_custom_eq_mode(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EAddCustomEQMode%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22presetindex%22%20val%3D%225%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22presetname%22%20val%3D%22my%20custom%20preset%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>AddCustomEQMode</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <presetindex>5</presetindex>
+                        <presetname>my custom preset</presetname>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.add_custom_eq_mode(5, 'my custom preset')

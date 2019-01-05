@@ -539,6 +539,106 @@ class SamsungMultiroomApi:
 
         self.get(COMMAND_CPM, 'SetPlaySelect', params)
 
+    def get_7band_eq_list(self):
+        """
+        Retrieve equalizer presets.
+
+        :returns: List of preset dicts with following attributes:
+            - @index
+            - presetindex
+            - presetname
+        """
+        response = self.get(COMMAND_UIC, 'Get7BandEQList')
+
+        return response_list(response['presetlist']['preset'])
+
+    def get_current_eq_mode(self):
+        """
+        Retrieve current equalizer settings.
+
+        :returns: Preset dict with following attributes:
+            - presetindex
+            - presetname
+            - eqvalue1
+            - eqvalue2
+            - eqvalue3
+            - eqvalue4
+            - eqvalue5
+            - eqvalue6
+            - eqvalue7
+        """
+        response = self.get(COMMAND_UIC, 'GetCurrentEQMode')
+
+        return response
+
+    def set_7band_eq_value(self, preset_index, values):
+        """
+        Set preset's equalizer settings.
+
+        Note, this doesn't overwrite preset settings, this method only sets those values temporarily. To overwrite use
+        reset_7band_eq_value() method.
+
+        :param preset_index:
+        :param values: List of 7 integers ranging between -6 and 6
+        """
+        params = [('presetindex', int(preset_index))]
+
+        for i, value in enumerate(values):
+            params.append(('eqvalue' + str(i + 1), int(value)))
+
+        self.get(COMMAND_UIC, 'Set7bandEQValue', params)
+
+    def set_7band_eq_mode(self, preset_index):
+        """
+        Switch equalizer to a predefined preset.
+
+        :param preset_index:
+        """
+        params = [('presetindex', int(preset_index))]
+
+        self.get(COMMAND_UIC, 'Set7bandEQMode', params)
+
+    def reset_7band_eq_value(self, preset_index, values):
+        """
+        Overwrite preset's equalizer settings.
+
+        :param preset_index:
+        :param values: List of 7 integers ranging between -6 and 6
+        """
+        params = [('presetindex', int(preset_index))]
+
+        for i, value in enumerate(values):
+            params.append(('eqvalue' + str(i + 1), int(value)))
+
+        self.get(COMMAND_UIC, 'Reset7bandEQValue', params)
+
+    def del_custom_eq_mode(self, preset_index):
+        """
+        Delete custom preset.
+
+        Note, you cannot delete predefined presets with indices between 0 and 3 inculsive.
+
+        :param preset_index:
+        """
+        params = [('presetindex', int(preset_index))]
+
+        self.get(COMMAND_UIC, 'DelCustomEQMode', params)
+
+    def add_custom_eq_mode(self, preset_index, preset_name):
+        """
+        Creates a new custom preset, using currently set equilizer values.
+
+        Use set_7band_eq_value() or set_7band_eq_mode() to set equilizer values.
+
+        It also allows to overwrite existing custom preset with current equilizer values.
+
+        :param presetindex:
+        :param presetname:
+        """
+        params = [('presetindex', int(preset_index)), ('presetname', preset_name)]
+
+        self.get(COMMAND_UIC, 'AddCustomEQMode', params)
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""

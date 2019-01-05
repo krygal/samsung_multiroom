@@ -5,11 +5,11 @@ Init.
 from . import core
 from .api import SamsungMultiroomApi
 from .api import SamsungMultiroomApiException
+from .equalizer import Equalizer
 from .player import PlayerOperator, DlnaPlayer, TuneInPlayer
 from .browser import DlnaBrowser, TuneInBrowser
 
 
-# factory
 def SamsungMultiroomSpeaker(ip_address):
     """
     Factory for Speaker.
@@ -17,6 +17,8 @@ def SamsungMultiroomSpeaker(ip_address):
     :param ip_address: IP address of the speaker.
     """
     api = SamsungMultiroomApi(ip_address)
+
+    equalizer = Equalizer(api)
 
     players = [
         DlnaPlayer(api),
@@ -29,4 +31,4 @@ def SamsungMultiroomSpeaker(ip_address):
         TuneInBrowser(api),
     ]
 
-    return core.Speaker(api, player_operator, browsers)
+    return core.Speaker(api, equalizer, player_operator, browsers)
