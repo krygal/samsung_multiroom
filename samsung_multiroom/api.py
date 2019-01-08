@@ -551,6 +551,25 @@ class SamsungMultiroomApi:
 
         self.get(COMMAND_CPM, 'SetPlaySelect', params)
 
+    def get_station_data(self, content_id):
+        """
+        Get radio station data.
+
+        :param content_id: Content id as returned by get_upper_radio_list(), get_select_radio_list() or
+            get_current_radio_list()
+        :returns: Station data dict:
+            - cpname - likely TuneIn
+            - title
+            - description
+            - thumbnail
+            - stationurl
+            - browsemode
+            - timestamp
+        """
+        params = [('selectitemid', int(content_id))]
+
+        return self.get(COMMAND_CPM, 'GetStationData', params)
+
     def get_7band_eq_list(self):
         """
         Retrieve equalizer presets.
@@ -650,6 +669,147 @@ class SamsungMultiroomApi:
         params = [('presetindex', int(preset_index)), ('presetname', preset_name)]
 
         self.get(COMMAND_UIC, 'AddCustomEQMode', params)
+
+    def set_speaker_time(self, datetime):
+        """
+        Set speaker's internal time
+
+        :param datetime: Datetime object e.g. datetime.datetime.now()
+        """
+        params = [
+            ('year', datetime.year),
+            ('month', datetime.month),
+            ('day', datetime.day),
+            ('hour', datetime.hour),
+            ('min', datetime.minute),
+            ('sec', datetime.second),
+        ]
+
+        self.get(COMMAND_UIC, 'SetSpeakerTime', params)
+
+    def get_sleep_timer(self):
+        """
+        Get sleep timer settings
+        :returns: Timer settings dict with following attributes:
+            - sleepoption - off|start
+            - sleeptime - remaining time in seconds
+        """
+        return self.get(COMMAND_UIC, 'GetSleepTimer')
+
+    def set_sleep_timer(self, option, time):
+        """
+        Put speaker into sleep mode after specific time
+        :param option: off|start
+        :param time: delay in seconds
+        """
+        params = [
+            ('option', option),
+            ('sleeptime', int(time)),
+        ]
+
+        self.get(COMMAND_UIC, 'SetSleepTimer', params)
+
+    def get_alarm_info(self):
+        """
+        Get list of set alarms.
+
+        :returns: List of dicts:
+            - @index - alarm id
+            - hour - hour part of alarm
+            - min - minutes part of alarm
+            - week - hex of days flags Sun Mon Tue Wed Thu Fri Sat, e.g. for weekdays 00111110 - 0x3E
+            - volume - volume of alarm
+            - title - radio station title
+            - description - radio station description
+            - thumbnail - radio station thumbnail
+            - stationurl - radio station URL
+            - set - on|off whether alarm is active or not
+            - soundenable - on|off whether predefined sound is used or not
+            - sound - on|off whether predefined sound is used or not
+            - alarmsoundname - name of predefined alarm sound names as returned by get_alarm_sound_list()
+            - duration - duration of alarm in seconds
+        """
+        response = self.get(COMMAND_UIC, 'GetAlarmInfo')
+
+        return response_list(response['alarmList']['alarm'])
+
+    def set_alarm_on_off(self, index, alarm):
+        """
+        Enable/disable alarm.
+
+        :param index: Alarm index
+        :param alarm: on|off
+        """
+        params = [
+            ('index', int(index)),
+            ('alarm', alarm),
+        ]
+
+        self.get(COMMAND_UIC, 'SetAlarmOnOff', params)
+
+    def get_alarm_sound_list(self):
+        """
+        Get list of predefined alarm sounds to use for alarm.
+
+        :returns: List of dicts:
+            - @index - alarm sound index
+            - alarsoundindex - (note misspelling) alarm sound index
+            - alarmsoundname - alarm sound name
+        """
+        response = self.get(COMMAND_UIC, 'GetAlarmSoundList')
+
+        return response_list(response['alarmlist']['alarmsound'])
+
+    def set_alarm_info(self, index, hour, minute, week, duration, volume, station_data):
+        """
+        Create alarm.
+
+        Note, you can only create 3 alarms with indices 0, 1, and 2.
+
+        :param index: Alarm index
+        :param hour: Alarm hour
+        :param minute: Alarm minute
+        :param week: hex of days flags Sun Mon Tue Wed Thu Fri Sat, e.g. for weekdays 00111110 - 0x3E
+        :param duration: Alarm duration in seconds
+        :param volume: Alarm volume 0-100
+        :param station_data: Dict as returned by get_station_data
+            - title
+            - description
+            - thumbnail
+            - stationurl
+        """
+        params = [
+            ('index', int(index)),
+            ('hour', int(hour)),
+            ('min', int(minute)),
+            ('week', hex(int(week, 16))),
+            ('volume', int(volume)),
+            ('title', station_data['title'], 'cdata'),
+            ('description', station_data['description'], 'cdata'),
+            ('thumbnail', station_data['thumbnail'], 'cdata'),
+            ('stationurl', station_data['stationurl'], 'cdata'),
+            ('soundenable', 'off'),
+            ('sound', -1),
+            ('duration', int(duration)),
+        ]
+
+        self.get(COMMAND_UIC, 'SetAlarmInfo', params)
+
+    def del_alarm(self, index_list):
+        """
+        Delete alarm(s).
+
+        Note, speaker's have a limit of 3 alarms and only the first 3 indices will be accepted for deletion while
+        remaining will be ignored. This restriction is set on the speaker itself.
+
+        :param index_list: List of alarm indices as returned by get_alarm_info()
+        """
+        params = [
+            ('totaldelnum', len(index_list)),
+        ]
+        params += [('index', int(i)) for i in index_list]
+
+        self.get(COMMAND_UIC, 'DelAlarm', params)
 
 
 def on_off_bool(value):

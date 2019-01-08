@@ -312,7 +312,7 @@ class TuneInPlayer(Player):
         - object_type - must be 'tunein_radio'
         - title - radio name
 
-        :param playlist: Playlist instance
+        :param playlist: Iterable returning player combatible objects
         :returns: True if playlist was accepted, False otherwise
         """
         for radio in playlist:

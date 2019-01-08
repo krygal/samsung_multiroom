@@ -97,17 +97,7 @@ class Equalizer:
         preset = self._api.get_current_eq_mode()
 
         return {
-            'id':
-                int(preset['presetindex']),
-            'name':
-                preset['presetname'],
-            'band_values': [
-                int(preset['eqvalue1']),
-                int(preset['eqvalue2']),
-                int(preset['eqvalue3']),
-                int(preset['eqvalue4']),
-                int(preset['eqvalue5']),
-                int(preset['eqvalue6']),
-                int(preset['eqvalue7']),
-            ],
+            'id': int(preset['presetindex']),
+            'name': preset['presetname'],
+            'band_values': [int(preset['eqvalue' + str(i)]) for i in range(1, 8)]
         }

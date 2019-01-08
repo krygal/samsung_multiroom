@@ -1189,6 +1189,43 @@ class TestApi(unittest.TestCase):
         api.set_play_select('0')
 
     @httpretty.activate(allow_net_connect=False)
+    def test_get_station_data(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetStationData%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22selectitemid%22%20val%3D%223%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>StationData</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>TuneIn</cpname>
+                        <title>BBC Radio 2</title>
+                        <browsemode>0</browsemode>
+                        <description>Amazing music. Played by an amazing line up.</description>
+                        <thumbnail>http://cdn-radiotime-logos.tunein.com/s24940d.png</thumbnail>
+                        <stationurl>http://opml.radiotime.com/Tune.ashx?id=s24940&amp;partnerId=qDDAbg6M&amp;serial=14BB6E87BBDB&amp;formats=mp3,wma,aac,qt,hls</stationurl>
+                        <timestamp>2019-01-08T15:21:47Z</timestamp>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        station_data = api.get_station_data(3)
+
+        self.assertEqual(station_data, {
+            'cpname': 'TuneIn',
+            'title': 'BBC Radio 2',
+            'browsemode': '0',
+            'description': 'Amazing music. Played by an amazing line up.',
+            'thumbnail': 'http://cdn-radiotime-logos.tunein.com/s24940d.png',
+            'stationurl': 'http://opml.radiotime.com/Tune.ashx?id=s24940&partnerId=qDDAbg6M&serial=14BB6E87BBDB&formats=mp3,wma,aac,qt,hls',
+            'timestamp': '2019-01-08T15:21:47Z',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
     def test_get_7band_eq_list(self):
         httpretty.register_uri(
             httpretty.GET,
@@ -1408,3 +1445,288 @@ class TestApi(unittest.TestCase):
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.add_custom_eq_mode(5, 'my custom preset')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_speaker_time(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetSpeakerTime%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22year%22%20val%3D%222019%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22month%22%20val%3D%221%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22day%22%20val%3D%226%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22hour%22%20val%3D%2212%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22min%22%20val%3D%2255%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22sec%22%20val%3D%2224%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>SpeakerTime</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <year>2019</year>
+                        <month>1</month>
+                        <day>6</day>
+                        <hour>12</hour>
+                        <min>55</min>
+                        <sec>24</sec>
+                    </response>
+                </UIC>"""
+        )
+
+        import datetime
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_speaker_time(datetime.datetime(2019, 1, 6, 12, 55, 24))
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_sleep_timer(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetSleepTimer%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>SleepTime</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <sleepoption>off</sleepoption>
+                        <sleeptime>0</sleeptime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        timer = api.get_sleep_timer()
+
+        self.assertEqual(timer, {
+            'sleepoption': 'off',
+            'sleeptime': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_sleep_timer(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetSleepTimer%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22option%22%20val%3D%22start%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22sleeptime%22%20val%3D%22300%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>SleepTime</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <sleepoption>start</sleepoption>
+                        <sleeptime>300</sleeptime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_sleep_timer('start', 300)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_alarm_info(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetAlarmInfo%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>AllAlarmInfo</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <totalindexcount>2</totalindexcount>
+                        <alarmList>
+                            <alarm index="0">
+                                <hour>13</hour>
+                                <min>27</min>
+                                <week>0x40</week>
+                                <volume>20</volume>
+                                <title />
+                                <description />
+                                <thumbnail />
+                                <stationurl />
+                                <set>on</set>
+                                <soundenable>on</soundenable>
+                                <sound>1</sound>
+                                <alarmsoundname>Disco</alarmsoundname>
+                                <duration>10</duration>
+                            </alarm>
+                            <alarm index="1">
+                                <hour>14</hour>
+                                <min>25</min>
+                                <week>0x28</week>
+                                <volume>6</volume>
+                                <title><![CDATA[MSNBC]]></title>
+                                <description><![CDATA[MSNBC is the premier...]]></description>
+                                <thumbnail />
+                                <stationurl><![CDATA[http://]]></stationurl>
+                                <set>on</set>
+                                <soundenable>off</soundenable>
+                                <sound>-1</sound>
+                                <alarmsoundname />
+                                <duration>0</duration>
+                            </alarm>
+                        </alarmList>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        alarm_info = api.get_alarm_info()
+
+        self.assertEqual(len(alarm_info), 2)
+        self.assertEqual(alarm_info[0], {
+            '@index': '0',
+            'hour': '13',
+            'min': '27',
+            'week': '0x40',
+            'volume': '20',
+            'title': None,
+            'description': None,
+            'thumbnail': None,
+            'stationurl': None,
+            'set': 'on',
+            'soundenable': 'on',
+            'sound': '1',
+            'alarmsoundname': 'Disco',
+            'duration': '10',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_alarm_on_off(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetAlarmOnOff%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%220%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22alarm%22%20val%3D%22on%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>AlarmOnOff</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <index>0</index>
+                        <alarm>on</alarm>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_alarm_on_off(0, 'on')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_alarm_sound_list(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetAlarmSoundList%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>AlarmSoundList</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <listcount>4</listcount>
+                        <alarmlist>
+                            <alarmsound index="0">
+                                <alarsoundindex>0</alarsoundindex>
+                                <alarmsoundname>Active Morning</alarmsoundname>
+                            </alarmsound>
+                            <alarmsound index="1">
+                                <alarsoundindex>1</alarsoundindex>
+                                <alarmsoundname>Disco</alarmsoundname>
+                            </alarmsound>
+                            <alarmsound index="2">
+                                <alarsoundindex>2</alarsoundindex>
+                                <alarmsoundname>Vintage</alarmsoundname>
+                            </alarmsound>
+                            <alarmsound index="3">
+                                <alarsoundindex>3</alarsoundindex>
+                                <alarmsoundname>Waltz</alarmsoundname>
+                            </alarmsound>
+                        </alarmlist>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        sounds = api.get_alarm_sound_list()
+
+        self.assertEqual(len(sounds), 4)
+        self.assertEqual(sounds[0], {
+            '@index': '0',
+            'alarsoundindex': '0',
+            'alarmsoundname': 'Active Morning',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_alarm_info(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetAlarmInfo%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22hour%22%20val%3D%2218%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22min%22%20val%3D%2221%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22week%22%20val%3D%220x1c%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22volume%22%20val%3D%222%22/%3E%3Cp%20type%3D%22cdata%22%20name%3D%22title%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BBBC%20Radio%204%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22cdata%22%20name%3D%22description%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BIntelligent%20speech%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22cdata%22%20name%3D%22thumbnail%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5Bhttp%3A//cdn-radiotime-logos.tunein.com/s25419d.png%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22cdata%22%20name%3D%22stationurl%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5Bhttp%3A//opml.radiotime.com/Tune.ashx%3Fid%3Ds25419%26partnerId%3DqDDAbg6M%26serial%3D90F1AAD31D82%26formats%3Dmp3%2Cwma%2Caac%2Cqt%2Chls%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22str%22%20name%3D%22soundenable%22%20val%3D%22off%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22sound%22%20val%3D%22-1%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22duration%22%20val%3D%220%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>AlarmInfo</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <index>0</index>
+                        <hour>18</hour>
+                        <min>21</min>
+                        <week>0x1c</week>
+                        <volume>2</volume>
+                        <title><![CDATA[BBC Radio 4]]></title>
+                        <description><![CDATA[Intelligent speech]]></description>
+                        <thumbnail><![CDATA[http://cdn-radiotime-logos.tunein.com/s25419d.png]]></thumbnail>
+                        <stationurl><![CDATA[http://opml.radiotime.com/Tune.ashx?id=s25419&partnerId=qDDAbg6M&serial=90F1AAD31D82&formats=mp3,wma,aac,qt,hls]]></stationurl>
+                        <alarm>on</alarm>
+                        <soundenable>off</soundenable>
+                        <sound>-1</sound>
+                        <duration>0</duration>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_alarm_info(
+            index=0,
+            hour=18,
+            minute=21,
+            week='0x1C',
+            duration=0,
+            volume=2,
+            station_data={
+                'title': 'BBC Radio 4',
+                'description': 'Intelligent speech',
+                'thumbnail': 'http://cdn-radiotime-logos.tunein.com/s25419d.png',
+                'stationurl': 'http://opml.radiotime.com/Tune.ashx?id=s25419&partnerId=qDDAbg6M&serial=90F1AAD31D82&formats=mp3,wma,aac,qt,hls',
+            }
+        )
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_del_alarm(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EDelAlarm%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22totaldelnum%22%20val%3D%224%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%221%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%222%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%224%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>DelAlarm</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier />
+                    <response result="ok">
+                        <index>0</index>
+                        <index>1</index>
+                        <index>2</index>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.del_alarm([0, 1, 2, 4])

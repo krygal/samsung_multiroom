@@ -4,16 +4,18 @@
 class Speaker:
     """Entry control for speaker operation."""
 
-    def __init__(self, api, equalizer, player_operator, browsers=None):
+    def __init__(self, api, clock, equalizer, player_operator, browsers=None):
         """
         Initialise the speaker.
 
         :param api: SamsungMultiroomApi instance
+        :param clock: Clock instance
         :param equalizer: Equalizer instance
         :param player_operator: PlayerOperator instance
         :param browsers: List of Browser instances
         """
         self._api = api
+        self._clock = clock
         self._equalizer = equalizer
         self._player_operator = player_operator
         self._browsers = {}
@@ -99,6 +101,14 @@ class Speaker:
     def unmute(self):
         """Unmute the speaker."""
         self._api.set_mute(False)
+
+    def get_clock(self):
+        """
+        Get clock to control time functions.
+
+        :returns: Clock instance
+        """
+        return self._clock
 
     def get_equalizer(self):
         """
