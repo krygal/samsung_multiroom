@@ -102,7 +102,8 @@ class Speaker:
         """Unmute the speaker."""
         self._api.set_mute(False)
 
-    def get_clock(self):
+    @property
+    def clock(self):
         """
         Get clock to control time functions.
 
@@ -110,7 +111,8 @@ class Speaker:
         """
         return self._clock
 
-    def get_equalizer(self):
+    @property
+    def equalizer(self):
         """
         Get equalizer to control sound adjustments.
 
@@ -118,7 +120,8 @@ class Speaker:
         """
         return self._equalizer
 
-    def get_player(self):
+    @property
+    def player(self):
         """
         Get currently active player.
 
@@ -128,7 +131,7 @@ class Speaker:
         """
         return self._player_operator
 
-    def get_browser(self, name):
+    def browser(self, name):
         """
         Get media browser by type
 

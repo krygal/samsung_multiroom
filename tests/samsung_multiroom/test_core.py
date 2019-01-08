@@ -107,30 +107,30 @@ class TestSpeaker(unittest.TestCase):
 
         api.set_mute.assert_called_once_with(False)
 
-    def test_get_player(self):
+    def test_player(self):
         speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
 
-        player = speaker.get_player()
+        player = speaker.player
 
         self.assertEqual(player, player_operator)
 
-    def test_get_browser(self):
+    def test_browser(self):
         speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
 
-        browser = speaker.get_browser('b2')
+        browser = speaker.browser('b2')
 
         self.assertEqual(browser, browsers[1])
 
-    def test_get_equalizer(self):
+    def test_equalizer(self):
         speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
 
-        eq = speaker.get_equalizer()
+        eq = speaker.equalizer
 
         self.assertEqual(eq, equalizer)
 
-    def test_get_clock(self):
+    def test_clock(self):
         speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
 
-        cl = speaker.get_clock()
+        cl = speaker.clock
 
         self.assertEqual(cl, clock)
