@@ -1,9 +1,12 @@
 """Low level api to communicate with samsung multiroom speaker."""
 import logging
 import urllib.parse
+import uuid
 
 import requests
-import xmltodict
+
+from .api_response import ApiResponse
+from .api_stream import ApiStream
 
 METHOD_GET = 'get'
 
@@ -31,7 +34,24 @@ class SamsungMultiroomApi:
         :param ip_address: IP address of the speaker to connect to
         :param port: Port to use, defaults to 55001
         """
+        self._ip_address = ip_address
+        self._port = port
         self._endpoint = 'http://{0}:{1}'.format(ip_address, port)
+        self._uuid = str(uuid.uuid1())
+
+    @property
+    def ip_address(self):
+        """
+        :returns: IP address of the host
+        """
+        return self._ip_address
+
+    @property
+    def port(self):
+        """
+        :returns: Port to use
+        """
+        return self._port
 
     def request(self, method, command, payload):
         """
@@ -51,34 +71,30 @@ class SamsungMultiroomApi:
             raise ValueError('Invalid command {0}, must be one of COMMAND_* constants'.format(method))
 
         url = '{0}/{1}?cmd={2}'.format(self._endpoint, command, urllib.parse.quote(payload))
+        headers = {
+            'mobileUUID': self._uuid,
+            'mobileName': 'Wireless Audio',
+            'mobileVersion': '1.0',
+        }
 
         try:
             _LOGGER.debug('Request %s. Raw payload %s', url, payload)
-            response = requests.get(url)
-            _LOGGER.debug('Response %s', response.text)
+            response = requests.get(url, headers=headers)
 
-            try:
-                dict_response = xmltodict.parse(response.text)
-            except Exception:
-                _LOGGER.error('Failed to parse a response %s', response.text, exc_info=1)
-                raise SamsungMultiroomApiException('Received invalid response {0}'.format(response.text))
-
-            # for some requests speaker returns command in response that does not match request command
-            for response_command in [COMMAND_UIC, COMMAND_CPM]:
-                try:
-                    dict_response_response = dict_response[response_command]['response']
-                    if dict_response_response['@result'] != 'ok':
-                        raise SamsungMultiroomApiException('Received invalid response {0}'.format(response.text))
-
-                    del dict_response_response['@result']
-                    return dict_response_response
-                except KeyError:
-                    pass
-
-            raise SamsungMultiroomApiException('Received invalid response {0}'.format(response.text))
+            return self._parse_response_text(response.text)
         except requests.exceptions.RequestException:
             _LOGGER.error('Request %s failed', url, exc_info=1)
             raise SamsungMultiroomApiException('Request {0} failed'.format(url))
+
+    def _parse_response_text(self, response_text):
+        _LOGGER.debug('Response %s', response_text)
+
+        response = ApiResponse(response_text)
+
+        if not response.success:
+            raise SamsungMultiroomApiException('Received invalid response {0}'.format(response.raw))
+
+        return response.data
 
     def get(self, command, action, params=None):
         """
@@ -89,12 +105,7 @@ class SamsungMultiroomApi:
         :param params: List of tuples (name, value, (optional) type hint str/dec/cdata)
         :returns dict
         """
-        payload = format_action(action)
-        if params:
-            for param in params:
-                payload += format_param(param)
-
-        return self.request(METHOD_GET, command, payload)
+        return self.request(METHOD_GET, command, format_payload(action, params))
 
     def get_speaker_name(self):
         """
@@ -112,9 +123,45 @@ class SamsungMultiroomApi:
 
     def get_main_info(self):
         """
-        :returns: Empty dict
+        Get main information about speaker.
+
+        :returns: Dict:
+            - party - off
+            - partymain - None
+            - grouptype - one of M, S, N (Master, Slave, None?)
+            - groupmainip - if speaker is in group, this is IP address of the master speaker
+            - groupmainmacaddr - if speaker is in group, this is MAC address of the master speaker
+            - spkmacaddr - this speaker's MAC address
+            - spkmodelname - this speaker's model
+            - groupmode - aasync, none
+            - channeltype - front, invalid
+            - channelvolume - 0
+            - multichinfo - on
+            - groupspknum - total number of speakers in the group
+            - dfsstatus - dfsoff
+            - protocolver - 2.3
+            - btmacaddr - bluetooth MAC address
         """
-        self.get(COMMAND_UIC, 'GetMainInfo')
+        path = '/{0}?cmd={1}'.format(COMMAND_UIC, urllib.parse.quote(format_payload('GetMainInfo')))
+
+        stream = ApiStream(self._ip_address, self._port)
+
+        # Speaker sends two http responses for this request, latter one contains correct payload. We attempt
+        # to fetch both responses and read/parse both.
+        for response in stream.open(path):
+            if not response.success:
+                stream.close()
+                _LOGGER.error('Request http://%s:%s%s failed', self._ip_address, self._port, path, exc_info=1)
+                raise SamsungMultiroomApiException('Request http://{0}:{1}{2} failed'.format(
+                    self._ip_address, self._port, path))
+
+            if response.name == 'MainInfo':
+                stream.close()
+                return response.data
+
+        _LOGGER.error('Request http://%s:%s%s failed', self._ip_address, self._port, path, exc_info=1)
+        raise SamsungMultiroomApiException('Request http://{0}:{1}{2} failed'.format(
+            self._ip_address, self._port, path))
 
     def get_volume(self):
         """
@@ -431,9 +478,9 @@ class SamsungMultiroomApi:
         for item in items:
             if 'title' not in item:
                 item['title'] = 'Unknown'
-            if 'title' not in item:
+            if 'artist' not in item:
                 item['artist'] = 'Unknown'
-            if 'title' not in item:
+            if 'thumbnail' not in item:
                 item['thumbnail'] = ''
 
             params.append(('device_udn', item['device_udn']))
@@ -811,6 +858,49 @@ class SamsungMultiroomApi:
 
         self.get(COMMAND_UIC, 'DelAlarm', params)
 
+    def spk_in_group(self, action):
+        """
+        ???
+
+        :param action: select|?
+        """
+        params = [('act', action)]
+
+        return self.get(COMMAND_UIC, 'SpkInGroup', params)
+
+    def set_multispk_group(self, name, speakers):
+        """
+        Group speakers.
+
+        :param name: Group's name
+        :param speakers: List of speakers (first one will be treated as main/control one). Dict:
+            - name
+            - ip
+            - mac
+        """
+        params = [('name', name, 'cdata'), ('index', 1), ('type', 'main'), ('spknum', len(speakers))]
+
+        for i, speaker in enumerate(speakers):
+            if i == 0:
+                params += [
+                    ('audiosourcemacaddr', speaker['mac']),
+                    ('audiosourcename', speaker['name'], 'cdata'),
+                    ('audiosourcetype', 'speaker'),
+                ]
+            else:
+                params += [
+                    ('subspkip', speaker['ip']),
+                    ('subspkmacaddr', speaker['mac']),
+                ]
+
+        self.get(COMMAND_UIC, 'SetMultispkGroup', params)
+
+    def set_ungroup(self):
+        """
+        Ungroup speakers.
+        """
+        self.get(COMMAND_UIC, 'SetUngroup')
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""
@@ -850,6 +940,16 @@ def format_param(param):
         return '<p type="{0}" name="{1}" val="empty"><![CDATA[{2}]]></p>'.format(type_hint, name, value)
 
     return '<p type="{0}" name="{1}" val="{2}"/>'.format(type_hint, name, value)
+
+
+def format_payload(action, params=None):
+    """Format full request payload."""
+    payload = format_action(action)
+    if params:
+        for param in params:
+            payload += format_param(param)
+
+    return payload
 
 
 def paginator(*args):

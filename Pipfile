@@ -15,6 +15,8 @@ yapf = "*"
 [packages]
 xmltodict = "*"
 requests = "*"
+upnpclient = "*"
+http-parser = "*"
 
 [requires]
 python_version = "3.6"

@@ -5,7 +5,7 @@ from .api import paginator
 
 
 class Player(metaclass=abc.ABCMeta):
-    """Controls playback functions."""
+    """Player interface to control playback functions."""
 
     @abc.abstractmethod
     def play(self, playlist):

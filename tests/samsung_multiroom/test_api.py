@@ -1,5 +1,6 @@
 import re
 import unittest
+from unittest.mock import MagicMock
 
 import httpretty
 import requests
@@ -125,24 +126,50 @@ class TestApi(unittest.TestCase):
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         speaker_name = api.set_speaker_name('Living Room')
 
-    @httpretty.activate(allow_net_connect=False)
-    def test_get_main_info(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetMainInfo%3C%2Fname%3E',
-            match_querystring=True,
-            body="""<?xml version="1.0" encoding="UTF-8"?>
-                <UIC>
-                    <method>GetMainInfo</method>
-                    <version>1.0</version>
-                    <speakerip>192.168.1.129</speakerip>
-                    <user_identifier></user_identifier>
-                    <response result="ok"></response>
-                </UIC>"""
-        )
+    @unittest.mock.patch('socket.socket')
+    def test_get_main_info(self, s):
+        s.return_value.recv.side_effect = [
+            b"""HTTP/1.1 200 OK
+Date: Fri, 02 Jan 1970 10:53:13 GMT
+Server: Samsung/1.0
+Content-Type: text/html
+Content-Length: 215
+Connection: close
+Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
+
+<?xml version="1.0" encoding="UTF-8"?><UIC><method>RequestDeviceInfo</method><version>1.0</version><speakerip>192.168.1.129</speakerip><user_identifier>public</user_identifier><response result="ok"></response></UIC>""",
+            b"""HTTP/1.1 200 OK
+Date: Fri, 02 Jan 1970 10:53:13 GMT
+Server: Samsung/1.0
+Content-Type: text/html
+Content-Length: 678
+Connection: close
+Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
+
+<?xml version="1.0" encoding="UTF-8"?><UIC><method>MainInfo</method><version>1.0</version><speakerip>192.168.1.129</speakerip><user_identifier></user_identifier><response result="ok"><party>off</party><partymain></partymain><grouptype>N</grouptype><groupmainip>0.0.0.0</groupmainip><groupmainmacaddr>00:00:00:00:00:00</groupmainmacaddr><spkmacaddr>xx:xx:xx:xx:xx:xx</spkmacaddr><spkmodelname>HW-K650</spkmodelname><groupmode>none</groupmode><channeltype>front</channeltype><channelvolume>0</channelvolume><multichinfo>on</multichinfo><groupspknum>1</groupspknum><dfsstatus>dfsoff</dfsstatus><protocolver>2.3</protocolver><btmacaddr>yy:yy:yy:yy:yy:yy</btmacaddr></response></UIC>""",
+            b'',
+        ]
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
-        api.get_main_info()
+        main_info = api.get_main_info()
+
+        self.assertEqual(main_info, {
+            'party': 'off',
+            'partymain': None,
+            'grouptype': 'N',
+            'groupmainip': '0.0.0.0',
+            'groupmainmacaddr': '00:00:00:00:00:00',
+            'spkmacaddr': 'xx:xx:xx:xx:xx:xx',
+            'spkmodelname': 'HW-K650',
+            'groupmode': 'none',
+            'channeltype': 'front',
+            'channelvolume': '0',
+            'multichinfo': 'on',
+            'groupspknum': '1',
+            'dfsstatus': 'dfsoff',
+            'protocolver': '2.3',
+            'btmacaddr': 'yy:yy:yy:yy:yy:yy',
+        })
 
     @httpretty.activate(allow_net_connect=False)
     def test_get_volume(self):
@@ -1730,3 +1757,65 @@ class TestApi(unittest.TestCase):
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.del_alarm([0, 1, 2, 4])
+
+    @unittest.skip('API call doesn\'t give any response')
+    def test_spk_in_group(self):
+        api = SamsungMultiroomApi(ip, 55001)
+        api.spk_in_group('select')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_multispk_group(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetMultispkGroup%3C/name%3E%3Cp%20type%3D%22cdata%22%20name%3D%22name%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BTest%20group%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22dec%22%20name%3D%22index%22%20val%3D%221%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22type%22%20val%3D%22main%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22spknum%22%20val%3D%223%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22audiosourcemacaddr%22%20val%3D%2200%3A00%3A00%3A00%3A00%3A00%22/%3E%3Cp%20type%3D%22cdata%22%20name%3D%22audiosourcename%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BLiving%20Room%5D%5D%3E%3C/p%3E%3Cp%20type%3D%22str%22%20name%3D%22audiosourcetype%22%20val%3D%22speaker%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22subspkip%22%20val%3D%22192.168.1.165%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22subspkmacaddr%22%20val%3D%2211%3A11%3A11%3A11%3A11%3A11%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22subspkip%22%20val%3D%22192.168.1.216%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22subspkmacaddr%22%20val%3D%2222%3A22%3A22%3A22%3A22%3A22%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>MultispkGroupStartEvent</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <groupname><![CDATA[Test group]]></groupname>
+                        <grouptype>M</grouptype>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_multispk_group('Test group', [
+            {
+                'name': 'Living Room',
+                'ip': '192.168.1.129',
+                'mac': '00:00:00:00:00:00',
+            },
+            {
+                'name': 'Kitchen',
+                'ip': '192.168.1.165',
+                'mac': '11:11:11:11:11:11',
+            },
+            {
+                'name': 'Bedroom',
+                'ip': '192.168.1.216',
+                'mac': '22:22:22:22:22:22',
+            }
+        ])
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_ungroup(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetUngroup%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>Ungroup</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok" />
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_ungroup()
