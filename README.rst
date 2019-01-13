@@ -1,5 +1,5 @@
-Samsung Multiroom (unstable)
-======================
+Samsung Multiroom (WIP)
+=======================
 
 Control Samsung Multiroom speakers.
 
@@ -24,36 +24,153 @@ Installation
     pip install samsung_multiroom
 
 
-Example
--------
+Example speaker control
+-----------------------
+
+**Initialise**
 
 .. code:: python
 
     from samsung_multiroom import SamsungMultiroomSpeaker
 
-    # replace with your speaker's ip address
-    ip_address = '192.168.1.129'
-    speaker = SamsungMultiroomSpeaker(ip_address)
+    # initialise (replace with your speaker's ip address)
+    speaker = SamsungMultiroomSpeaker('192.168.1.129')
 
     # get speaker name
     speaker.get_name()
 
+
+**Basic functions**
+
+.. code:: python
+
+    # get/set volume
+    volume = speaker.get_volume()
+    print(volume)
+
+    speaker.set_volume(10)
+
     # switch source to connect with your samsung tv
     speaker.set_source('soundshare')
 
-    # set volume
-    speaker.set_volume(20)
+    # mute/unmute
+    speaker.mute()
+    speaker.unmute()
 
-    # play current wifi source
-    speaker.set_source('wifi')
-    speaker.get_player().resume()
 
-    # pause
-    speaker.get_player().pause()
+**Audio source browsers**
+
+.. code:: python
+
+    # browse dlna device called nas
+    browser = speaker.browser('dlna')
+    browser = browser.browse('/nas/Music/By Folder/Air/Moon Safari/CD 1')
+
+    for item in browser:
+        print(item.object_type, item.object_id, item.artist, '-',  item.name)
+
+
+    # browse TuneIn radios
+    browser = speaker.browser('tunein')
+    browser = browser.browse('/Trending/')
+
+    for item in browser:
+        print(item.object_type, item.object_id, item.name)
+
+
+**Player functions**
+
+.. code:: python
+
+    # note: currently only dlna and tunein radio players are implemented, more are coming soon
+
+    # create playlist from browser items (see above) and play
+    speaker.player.play(browser)
+
+    # pause/resume
+    speaker.player.pause()
+    speaker.player.resume()
 
     # get track info
-    track = speaker.get_player().get_current_track()
+    track = speaker.player.get_current_track()
     print(track)
+
+
+**Equalizer functions**
+
+.. code:: python
+
+    # get preset names
+    presets = speaker.equalizer.get_presets_names()
+    print(presets)
+
+    # set predefined equalizer settings
+    speaker.equalizer.set('Pop')
+
+    # set adhoc settings
+    speaker.equalizer.set([4,3,2,1,2,3,0]) # <-6, 6>
+
+    # overwrite current preset
+    speaker.equalizer.save()
+
+    # ... or save as a new preset
+    speaker.equalizer.save('Experimental')
+
+
+**Clock functions**
+
+.. code:: python
+
+    # set alarm
+    browser = speaker.browser('tunein')
+    browser = browser.browse('/Trending/')
+
+    speaker.clock.alarm.slot(0).set(
+        time='17:28',
+        weekdays=[0,1,5], # Mon, Tue, Fri
+        playlist=browser,
+    )
+
+    # enable/disable alarm 0
+    speaker.clock.alarm.slot(0).enable()
+    speaker.clock.alarm.slot(0).disable()
+
+    # sleep after 30 seconds
+    speaker.clock.timer.start(300)
+
+    remaining_time = speaker.clock.timer.get_remaining_time()
+    print(remaining_time)
+
+
+**Speaker discovery**
+
+.. code:: python
+
+    from samsung_multiroom import SamsungSpeakerDiscovery
+    speakers = SamsungSpeakerDiscovery().discover() # takes some time
+
+    for s in speakers:
+        print(s.get_name(), '@', s.ip_address)
+
+
+**Speaker grouping**
+
+.. code:: python
+
+    # (after speaker discovery)
+    main_speaker = speakers[0]
+    rest_speakers = speakers[1:]
+
+    speaker_group = main_speaker.group('My first group', rest_speakers)
+
+    # now use speaker group like a speaker
+    speaker_group.set_volume(10)
+
+    browser = speaker_group.browser('dlna')
+    browser = browser.browse('/nas/Music/By Folder/Air/Moon Safari/CD 1')
+
+    speaker_group.player.play(browser)
+
 
 
 License
