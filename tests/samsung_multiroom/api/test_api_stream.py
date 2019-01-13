@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.api_response import ApiResponse
-from samsung_multiroom.api_stream import ApiStream
+from samsung_multiroom.api import ApiResponse
+from samsung_multiroom.api import ApiStream
 
 
 class TestApiStream(unittest.TestCase):

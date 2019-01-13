@@ -1,6 +1,6 @@
 import unittest
 
-from samsung_multiroom.api_response import ApiResponse
+from samsung_multiroom.api import ApiResponse
 
 
 class TestApiResponse(unittest.TestCase):
