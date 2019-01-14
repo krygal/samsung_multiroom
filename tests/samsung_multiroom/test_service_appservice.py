@@ -25,6 +25,7 @@ class TestAppService(unittest.TestCase):
 
         browser = service.browser
 
+        api.set_cp_service.assert_called_once_with(12)
         self.assertIsInstance(browser, AppBrowser)
 
     def test_login(self):
@@ -32,6 +33,7 @@ class TestAppService(unittest.TestCase):
 
         service.login('test_username', 'test_password')
 
+        api.set_cp_service.assert_called_once_with(12)
         api.set_sign_in.assert_called_once_with('test_username', 'test_password')
 
     def test_logout(self):
@@ -39,4 +41,5 @@ class TestAppService(unittest.TestCase):
 
         service.logout()
 
+        api.set_cp_service.assert_called_once_with(12)
         api.set_sign_out.assert_called_once()

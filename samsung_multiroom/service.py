@@ -185,6 +185,7 @@ class AppService(Service):
         """
         :returns: Compatible Browser instance for this service
         """
+        self._api.set_cp_service(self._id)
         return self._browser
 
     def login(self, username, password):
@@ -194,10 +195,12 @@ class AppService(Service):
         :param username:
         :param password:
         """
+        self._api.set_cp_service(self._id)
         self._api.set_sign_in(username, password)
 
     def logout(self):
         """
         Reset authentication state.
         """
+        self._api.set_cp_service(self._id)
         self._api.set_sign_out()

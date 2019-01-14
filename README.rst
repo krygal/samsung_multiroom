@@ -80,6 +80,24 @@ Example speaker control
         print(item.object_type, item.object_id, item.name)
 
 
+**App integrations**
+
+.. code:: python
+
+    # check available services
+    names = speaker.get_services_names()
+    print(names)
+
+    # authenticate (unless you've done it already via mobile app)
+    speaker.service('Deezer').login('your email', 'your password')
+
+    browser = speaker.service('Deezer').browser
+    browser = browser.browse('/Browse/Rock/Artists/Queen')
+
+    for item in browser:
+        print(item.object_type, item.object_id, item.name)
+
+
 **Player functions**
 
 .. code:: python

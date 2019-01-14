@@ -94,22 +94,55 @@ class DlnaBrowser(Browser):
 
             # if we don't have device udn we search through devices
             if device_udn is None:
-                items = []
-                dms_list = paginator(self._api.get_dms_list, 0, 20)
-
-                for dms in dms_list:
-                    items.append(dms_to_item(dms))
+                data_list = paginator(self._api.get_dms_list, 0, 20)
+            elif parent_id is None:
+                data_list = paginator(self._api.pc_get_music_list_by_category, device_udn, 0, 20)
             else:
-                items = []
-                if parent_id is None:
-                    music_list = paginator(self._api.pc_get_music_list_by_category, device_udn, 0, 20)
-                else:
-                    music_list = paginator(self._api.pc_get_music_list_by_id, device_udn, parent_id, 0, 20)
+                data_list = paginator(self._api.pc_get_music_list_by_id, device_udn, parent_id, 0, 20)
 
-                for music_item in music_list:
-                    items.append(music_item_to_item(music_item))
+            items = [self._factory_item(data) for data in data_list]
 
         return DlnaBrowser(self._api, self._merge_path(path), items)
+
+    def _factory_item(self, data):
+        kwargs = {'metadata': {}}
+
+        # mandatory
+        if 'dmsid' in data:
+            kwargs['object_id'] = None
+        if '@object_id' in data:
+            kwargs['object_id'] = data['@object_id']
+
+        if 'type' in data and data['type'] == 'AUDIO':
+            kwargs['object_type'] = 'dlna_audio'
+        else:
+            kwargs['object_type'] = 'container'
+
+        if 'dmsname' in data:
+            kwargs['name'] = data['dmsname']
+        if 'title' in data:
+            kwargs['name'] = data['title']
+
+        # metadata
+        if 'artist' in data:
+            kwargs['metadata']['artist'] = data['artist']
+        if 'album' in data:
+            kwargs['metadata']['album'] = data['album']
+        if 'timelength' in data and data['timelength']:
+            (hours, minutes, seconds) = data['timelength'].split(':')
+            kwargs['metadata']['duration'] = int(hours) * 3600 + int(minutes) * 60 + int(float(seconds))
+        if 'thumbnail' in data:
+            kwargs['metadata']['thumbnail_url'] = data['thumbnail']
+        if 'thumbnail_JPG_LRG' in data:
+            kwargs['metadata']['thumbnail_url'] = data['thumbnail_JPG_LRG']
+        if 'devicetype' in data:
+            kwargs['metadata']['device_type'] = data['devicetype']
+        if 'dmsid' in data:
+            kwargs['metadata']['device_udn'] = data['dmsid']
+        if 'device_udn' in data:
+            kwargs['metadata']['device_udn'] = data['device_udn']
+
+        return Item(**kwargs)
 
 
 class TuneInBrowser(Browser):
@@ -143,22 +176,36 @@ class TuneInBrowser(Browser):
                     parent_id = item.object_id
                     break
 
-            # if we don't have device udn we search through devices
             if parent_id is None:
-                items = []
-                radio_list = paginator(self._api.browse_main, 0, 30)
-
-                for radio_item in radio_list:
-                    items.append(radio_to_radio_item(radio_item))
+                data_list = paginator(self._api.browse_main, 0, 30)
             else:
-                items = []
-                radio_list = paginator(self._api.get_select_radio_list, self._api.get_current_radio_list, parent_id, 0,
-                                       30)
+                data_list = paginator(self._api.get_select_radio_list, self._api.get_current_radio_list, parent_id, 0,
+                                      30)
 
-                for radio_item in radio_list:
-                    items.append(radio_to_radio_item(radio_item))
+            items = [self._factory_item(data) for data in data_list]
 
         return TuneInBrowser(self._api, self._merge_path(path), items)
+
+    def _factory_item(self, data):
+        kwargs = {'metadata': {}}
+
+        # mandatory
+        if 'contentid' in data:
+            kwargs['object_id'] = data['contentid']
+
+        if '@type' in data and data['@type'] == '2':
+            kwargs['object_type'] = 'tunein_radio'
+        else:
+            kwargs['object_type'] = 'container'
+
+        if 'title' in data:
+            kwargs['name'] = data['title']
+
+        # metadata
+        if 'thumbnail' in data:
+            kwargs['metadata']['thumbnail_url'] = data['thumbnail']
+
+        return Item(**kwargs)
 
 
 class AppBrowser(Browser):
@@ -174,10 +221,72 @@ class AppBrowser(Browser):
         self._name = app_name
 
     def get_name(self):
-        raise NotImplementedError()
+        return self._name
 
     def browse(self, path=None):
-        raise NotImplementedError()
+        folders = path_to_folders(path)
+
+        parent_id = None
+
+        # from root
+        if folders[0] is None:
+            items = []
+            depth = 0
+        else:
+            items = self._get_items()
+            depth = len(path_to_folders(self._path))
+
+        for folder in folders:
+            depth += 1
+
+            # locate prepopulated items matching folder
+            for item in items:
+                if item.name == folder:
+                    parent_id = item.object_id
+                    break
+
+            if parent_id is None:
+                data_list = self._api.get_cp_submenu()
+            elif depth <= 2:
+                data_list = paginator(self._api.set_select_cp_submenu, parent_id, 0, 30)
+            else:
+                data_list = paginator(self._api.get_select_radio_list, self._api.get_current_radio_list, parent_id, 0,
+                                      30)
+
+            items = [self._factory_item(data) for data in data_list]
+
+        return AppBrowser(self._api, self._id, self._name, self._merge_path(path), items)
+
+    def _factory_item(self, data):
+        kwargs = {'metadata': {}}
+
+        # mandatory
+        if '@id' in data:
+            kwargs['object_id'] = data['@id']
+        if 'contentid' in data:
+            kwargs['object_id'] = data['contentid']
+
+        if '@type' in data and data['@type'] in ('1', '2', '4'):
+            kwargs['object_type'] = 'app_audio'
+        else:
+            kwargs['object_type'] = 'container'
+
+        if 'submenuitem_localized' in data:
+            kwargs['name'] = data['submenuitem_localized']
+        if 'title' in data:
+            kwargs['name'] = data['title']
+
+        # metadata
+        if 'artist' in data:
+            kwargs['metadata']['artist'] = data['artist']
+        if 'album' in data:
+            kwargs['metadata']['album'] = data['album']
+        if 'tracklength' in data:
+            kwargs['metadata']['duration'] = int(data['tracklength'])
+        if 'thumbnail' in data:
+            kwargs['metadata']['thumbnail_url'] = data['thumbnail']
+
+        return Item(**kwargs)
 
 
 class Item:
@@ -278,60 +387,3 @@ def folders_to_path(folders):
         folders[0] = ''
 
     return '/'.join(folders) or '/'
-
-
-def dms_to_item(dms):
-    """
-    :param dms: Dms dict to convert
-    :returns: Item instance
-    """
-    return Item(
-        object_id=None,
-        object_type='container',
-        name=dms['dmsname'],
-        metadata={
-            'device_udn': dms['dmsid'],
-            'device_type': dms['devicetype'],
-            'thumbnail_url': dms['thumbnail_JPG_LRG'],
-        })
-
-
-def music_item_to_item(music_item):
-    """
-    :param music_item: Music item dict to convert
-    :returns: Item instance
-    """
-    if music_item['type'] == 'CONTAINER':
-        return Item(
-            object_id=music_item['@object_id'],
-            object_type='container',
-            name=music_item['title'],
-            metadata={'device_udn': music_item['device_udn']})
-    if music_item['type'] == 'AUDIO':
-        (hours, minutes, seconds) = music_item['timelength'].split(':')
-        return Item(
-            object_id=music_item['@object_id'],
-            object_type='dlna_audio',
-            name=music_item['title'],
-            metadata={
-                'device_udn': music_item['device_udn'],
-                'artist': music_item['artist'],
-                'album': music_item['album'],
-                'thumbnail_url': music_item['thumbnail'],
-                'duration': int(hours) * 3600 + int(minutes) * 60 + int(float(seconds))
-            })
-
-    raise ValueError('Unsupported music item type {0}'.format(music_item['type']))
-
-
-def radio_to_radio_item(radio):
-    """
-    :param dms: Radio dict to convert
-    :returns: Item instance
-    """
-    if radio['@type'] == '0':
-        return Item(object_id=radio['contentid'], object_type='container', name=radio['title'])
-    if radio['@type'] == '2':
-        return Item(object_id=radio['contentid'], object_type='tunein_radio', name=radio['title'])
-
-    raise ValueError('Unsupported radio item type {0}'.format(radio['@type']))
