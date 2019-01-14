@@ -1819,3 +1819,392 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.set_ungroup()
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_cp_list(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetCpList%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22liststartindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>CpList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <listtotalcount>24</listtotalcount>
+                        <liststartindex>0</liststartindex>
+                        <listcount>24</listcount>
+                        <cplist>
+                            <cp>
+                                <cpid>0</cpid>
+                                <cpname>Pandora</cpname>
+                                <signinstatus>0</signinstatus>
+                            </cp>
+                            <cp>
+                                <cpid>1</cpid>
+                                <cpname>Spotify</cpname>
+                                <signinstatus>0</signinstatus>
+                            </cp>
+                            <cp>
+                                <cpid>2</cpid>
+                                <cpname>Deezer</cpname>
+                                <signinstatus>1</signinstatus>
+                                <username>test_username</username>
+                            </cp>
+                        </cplist>
+                    </response>
+                    </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        cps = api.get_cp_list(0, 30)
+
+        self.assertEqual(len(cps), 3)
+        self.assertEqual(cps[0], {
+            'cpid': '0',
+            'cpname': 'Pandora',
+            'signinstatus': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_cp_service(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetCpService%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22cpservice_id%22%20val%3D%222%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="utf-8" ?>
+                <CPM>
+                    <method>CpChanged</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_cp_service(2)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_cp_info(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetCpInfo%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>CpInfo</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T09:50:46Z</timestamp>
+                        <category />
+                        <signinstatus>1</signinstatus>
+                        <username>test_username</username>
+                        <subscription_info>Listening is limited to 30-second clips. Subscribe to enjoy unlimited music!</subscription_info>
+                        <audioinfo>
+                            <title>Introduction And Yaqui Indian Folk Song</title>
+                            <streamtype>station</streamtype>
+                            <thumbnail>https://e-cdns-images.dzcdn.net/images/cover/a9b4964ab775575efa2719827b9e88b9/500x500-000000-80-0-0.jpg</thumbnail>
+                            <playstatus>play</playstatus>
+                        </audioinfo>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        cp_info = api.get_cp_info()
+
+        self.assertEqual(cp_info, {
+            'cpname': 'Deezer',
+            'timestamp': '2019-01-14T09:50:46Z',
+            'category': None,
+            'signinstatus': '1',
+            'username': 'test_username',
+            'subscription_info': 'Listening is limited to 30-second clips. Subscribe to enjoy unlimited music!',
+            'audioinfo': {
+                'title': 'Introduction And Yaqui Indian Folk Song',
+                'streamtype': 'station',
+                'thumbnail': 'https://e-cdns-images.dzcdn.net/images/cover/a9b4964ab775575efa2719827b9e88b9/500x500-000000-80-0-0.jpg',
+                'playstatus': 'play',
+            },
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_sign_in(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetSignIn%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22username%22%20val%3D%22test_username%22/%3E%3Cp%20type%3D%22str%22%20name%3D%22password%22%20val%3D%22test_password%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>SignInStatus</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T10:09:49Z</timestamp>
+                        <category isroot="1" />
+                        <category_localized />
+                        <signinstatus>1</signinstatus>
+                        <root>Playlist Picks</root>
+                        <root_index>2</root_index>
+                        <root_localized>Playlist Picks</root_localized>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_sign_in('test_username', 'test_password')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_sign_out(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetSignOut%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>SignOutStatus</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T10:17:05Z</timestamp>
+                        <category isroot="1" />
+                        <category_localized />
+                        <signoutstatus>1</signoutstatus>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_sign_out()
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_cp_submenu(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetCpSubmenu%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>SubMenu</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T10:23:16Z</timestamp>
+                        <totallistcount>10</totallistcount>
+                        <submenu selected_id="0">
+                            <submenuitem id="0">
+                                <submenuitem_localized><![CDATA[Flow]]></submenuitem_localized>
+                            </submenuitem>
+                            <submenuitem id="1">
+                                <submenuitem_localized><![CDATA[Browse]]></submenuitem_localized>
+                            </submenuitem>
+                            <submenuitem id="2">
+                                <submenuitem_localized><![CDATA[Playlist Picks]]></submenuitem_localized>
+                            </submenuitem>
+                        </submenu>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        submenu = api.get_cp_submenu()
+
+        self.assertEqual(len(submenu), 3)
+        self.assertEqual(submenu[0], {
+            '@id': '0',
+            'submenuitem_localized': 'Flow',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_select_cp_submenu(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetSelectCpSubmenu%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22contentid%22%20val%3D%221%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2210%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T10:40:56Z</timestamp>
+                        <root>Browse</root>
+                        <root_index>1</root_index>
+                        <root_localized>Browse</root_localized>
+                        <category isroot="1">Genres</category>
+                        <category_localized>Genres</category_localized>
+                        <totallistcount>23</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>10</listcount>
+                        <menulist>
+                            <menuitem type="0">
+                                <title>All</title>
+                                <contentid>0</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Pop</title>
+                                <contentid>1</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Rap/Hip Hop</title>
+                                <contentid>2</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Rock</title>
+                                <contentid>3</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Dance</title>
+                                <contentid>4</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>R&amp;B</title>
+                                <contentid>5</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Alternative</title>
+                                <contentid>6</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Electro</title>
+                                <contentid>7</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Folk</title>
+                                <contentid>8</contentid>
+                            </menuitem>
+                            <menuitem type="0">
+                                <title>Reggae</title>
+                                <contentid>9</contentid>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        submenu = api.set_select_cp_submenu(1, 0, 10)
+
+        self.assertEqual(len(submenu), 10)
+        self.assertEqual(submenu[0], {
+            '@type': '0',
+            'title': 'All',
+            'contentid': '0',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_cp_player_playlist(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3EGetCpPlayerPlaylist%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22startindex%22%20val%3D%220%22/%3E%3Cp%20type%3D%22dec%22%20name%3D%22listcount%22%20val%3D%2230%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>RadioPlayList</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T11:10:39Z</timestamp>
+                        <root>Playlist Picks</root>
+                        <root_index>2</root_index>
+                        <root_localized>Playlist Picks</root_localized>
+                        <category isroot="0">Playlist</category>
+                        <category_localized>Playlist</category_localized>
+                        <totallistcount>3</totallistcount>
+                        <startindex>0</startindex>
+                        <listcount>3</listcount>
+                        <menulist>
+                            <menuitem type="1" available="1" currentplaying="1">
+                                <artist>Madeleine Peyroux</artist>
+                                <album>Careless Love</album>
+                                <mediaid>881851</mediaid>
+                                <tracklength>0</tracklength>
+                                <title>Don't Wait Too Long</title>
+                                <contentid>0</contentid>
+                                <thumbnail>http://api.deezer.com/album/100127/image</thumbnail>
+                            </menuitem>
+                            <menuitem type="1" available="1">
+                                <artist>Marcus Strickland's Twi-Life</artist>
+                                <album>Nihil Novi</album>
+                                <mediaid>122883722</mediaid>
+                                <tracklength>0</tracklength>
+                                <title>Cycle</title>
+                                <contentid>1</contentid>
+                                <thumbnail>http://api.deezer.com/album/12864776/image</thumbnail>
+                            </menuitem>
+                            <menuitem type="1" available="1">
+                                <artist>Bill Evans Trio</artist>
+                                <album>Everybody Digs Bill Evans (Remastered)</album>
+                                <mediaid>4156086</mediaid>
+                                <tracklength>0</tracklength>
+                                <title>What Is There To Say? (Album Version)</title>
+                                <contentid>2</contentid>
+                                <thumbnail>http://api.deezer.com/album/387401/image</thumbnail>
+                            </menuitem>
+                        </menulist>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        playlist = api.get_cp_player_playlist(0, 30)
+
+        self.assertEqual(len(playlist), 3)
+        self.assertEqual(playlist[0], {
+            '@type': '1',
+            '@available': '1',
+            '@currentplaying': '1',
+            'artist': 'Madeleine Peyroux',
+            'album': 'Careless Love',
+            'mediaid': '881851',
+            'tracklength': '0',
+            'title': 'Don\'t Wait Too Long',
+            'contentid': '0',
+            'thumbnail': 'http://api.deezer.com/album/100127/image',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_skip_current_track(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetSkipCurrentTrack%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <CPM>
+                    <method>SkipInfo</method>
+                    <version>0.1</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>407c385a-17ef-11e9-b3ee-48e244f52360</user_identifier>
+                    <response result="ok">
+                        <cpname>Deezer</cpname>
+                        <timestamp>2019-01-14T11:21:25Z</timestamp>
+                        <category isroot="1" />
+                        <category_localized />
+                        <skipstatus>1</skipstatus>
+                        <root>Flow</root>
+                        <root_index>0</root_index>
+                        <root_localized>Flow</root_localized>
+                    </response>
+                </CPM>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        playlist = api.set_skip_current_track()

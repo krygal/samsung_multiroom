@@ -63,6 +63,8 @@ Example speaker control
 .. code:: python
 
     # browse dlna device called nas
+    browser = speaker.service('dlna').browser
+    # or shorter
     browser = speaker.browser('dlna')
     browser = browser.browse('/nas/Music/By Folder/Air/Moon Safari/CD 1')
 
@@ -71,7 +73,7 @@ Example speaker control
 
 
     # browse TuneIn radios
-    browser = speaker.browser('tunein')
+    browser = speaker.service('tunein').browser
     browser = browser.browse('/Trending/')
 
     for item in browser:
@@ -122,7 +124,7 @@ Example speaker control
 .. code:: python
 
     # set alarm
-    browser = speaker.browser('tunein')
+    browser = speaker.service('tunein').browser
     browser = browser.browse('/Trending/')
 
     speaker.clock.alarm.slot(0).set(
@@ -166,7 +168,7 @@ Example speaker control
     # now use speaker group like a speaker
     speaker_group.set_volume(10)
 
-    browser = speaker_group.browser('dlna')
+    browser = speaker_group.service('dlna').browser
     browser = browser.browse('/nas/Music/By Folder/Air/Moon Safari/CD 1')
 
     speaker_group.player.play(browser)

@@ -13,17 +13,12 @@ def get_speaker():
     clock = MagicMock()
     equalizer = MagicMock()
     player_operator = MagicMock()
-    browsers = [
-        MagicMock(),
-        MagicMock(),
-    ]
 
-    browsers[0].get_name.return_value = 'b1'
-    browsers[1].get_name.return_value = 'b2'
+    service_registry = MagicMock()
 
-    speaker = Speaker(api, clock, equalizer, player_operator, browsers)
+    speaker = Speaker(api, clock, equalizer, player_operator, service_registry)
 
-    return (speaker, api, clock, equalizer, player_operator, browsers)
+    return (speaker, api, clock, equalizer, player_operator, service_registry)
 
 
 class TestSpeaker(unittest.TestCase):
@@ -32,7 +27,7 @@ class TestSpeaker(unittest.TestCase):
         self.assertIsInstance(SamsungMultiroomSpeaker('192.168.1.129'), Speaker)
 
     def test_get_name(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
         api.get_speaker_name.return_value = 'Speaker name'
 
         name = speaker.get_name()
@@ -41,14 +36,14 @@ class TestSpeaker(unittest.TestCase):
         self.assertEqual(name, 'Speaker name')
 
     def test_set_name(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker.set_name('Living Room')
 
         api.set_speaker_name.assert_called_once_with('Living Room')
 
     def test_get_volume(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
         api.get_volume.return_value = 10
 
         volume = speaker.get_volume()
@@ -57,21 +52,21 @@ class TestSpeaker(unittest.TestCase):
         self.assertEqual(volume, 10)
 
     def test_set_volume(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker.set_volume(10)
 
         api.set_volume.assert_called_once_with(10)
 
     def test_get_sources(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         sources = speaker.get_sources()
 
         self.assertEqual(sorted(sources), sorted(['aux', 'bt', 'hdmi', 'optical', 'soundshare', 'wifi']))
 
     def test_get_source(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
         api.get_func.return_value = {'function':'wifi', 'submode':'dlna'}
 
         source = speaker.get_source()
@@ -80,14 +75,14 @@ class TestSpeaker(unittest.TestCase):
         self.assertEqual(source, 'wifi')
 
     def test_set_source(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker.set_source('hdmi')
 
         api.set_func.assert_called_once_with('hdmi')
 
     def test_is_muted(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
         api.get_mute.return_value = True
 
         muted = speaker.is_muted()
@@ -96,49 +91,71 @@ class TestSpeaker(unittest.TestCase):
         self.assertTrue(muted)
 
     def test_mute(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker.mute()
 
         api.set_mute.assert_called_once_with(True)
 
     def test_unmute(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker.unmute()
 
         api.set_mute.assert_called_once_with(False)
 
+    def test_get_services_names(self):
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
+        service_registry.get_services_names.return_value = ['dlna', 'tunein', 'deezer', 'spotify']
+
+        services_names = speaker.get_services_names()
+
+        self.assertEqual(services_names, ['dlna', 'tunein', 'deezer', 'spotify'])
+        service_registry.get_services_names.assert_called_once()
+
+    def test_service(self):
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
+        service_registry.service.return_value = MagicMock()
+
+        service = speaker.service('dlna')
+
+        self.assertEqual(service, service_registry.service.return_value)
+        service_registry.service.assert_called_once_with('dlna')
+
     def test_player(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         player = speaker.player
 
         self.assertEqual(player, player_operator)
 
     def test_browser(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
-        browser = speaker.browser('b2')
+        browser = MagicMock()
+        service_registry.service.return_value = MagicMock(browser=browser)
 
-        self.assertEqual(browser, browsers[1])
+        service_browser = speaker.browser('b2')
+
+        self.assertEqual(service_browser, browser)
+        service_registry.service.assert_called_once_with('b2')
 
     def test_equalizer(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         eq = speaker.equalizer
 
         self.assertEqual(eq, equalizer)
 
     def test_clock(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         cl = speaker.clock
 
         self.assertEqual(cl, clock)
 
     def test_group(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker1 = MagicMock()
         speaker2 = MagicMock()
@@ -179,7 +196,7 @@ class TestSpeaker(unittest.TestCase):
         ])
 
     def test_ungroup(self):
-        speaker, api, clock, equalizer, player_operator, browsers = get_speaker()
+        speaker, api, clock, equalizer, player_operator, service_registry = get_speaker()
 
         speaker.ungroup()
 

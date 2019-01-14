@@ -161,6 +161,25 @@ class TuneInBrowser(Browser):
         return TuneInBrowser(self._api, self._merge_path(path), items)
 
 
+class AppBrowser(Browser):
+    """
+    Generic music streaming app service browser.
+    """
+
+    def __init__(self, api, app_id, app_name, path=None, items=None):
+        super().__init__(path, items)
+
+        self._api = api
+        self._id = app_id
+        self._name = app_name
+
+    def get_name(self):
+        raise NotImplementedError()
+
+    def browse(self, path=None):
+        raise NotImplementedError()
+
+
 class Item:
     """
     Immutable browser item.

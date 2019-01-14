@@ -169,6 +169,24 @@ class TestSpeakerGroup(unittest.TestCase):
         speakers[1].unmute.assert_called_once()
         speakers[2].unmute.assert_called_once()
 
+    def test_get_services_names_returns_main_speaker_services(self):
+        speaker_group, api, speakers = _get_speaker_group()
+
+        speaker_group.get_services_names()
+
+        speakers[0].get_services_names.assert_called_once()
+        speakers[1].get_services_names.assert_not_called()
+        speakers[2].get_services_names.assert_not_called()
+
+    def test_service_returns_main_speaker_service(self):
+        speaker_group, api, speakers = _get_speaker_group()
+
+        speaker_group.service('dlna')
+
+        speakers[0].service.assert_called_once_with('dlna')
+        speakers[1].service.assert_not_called()
+        speakers[2].service.assert_not_called()
+
     def test_player_returns_main_speaker_player(self):
         speaker_group, api, speakers = _get_speaker_group()
         speakers[0].player = MagicMock()

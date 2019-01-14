@@ -2,8 +2,6 @@
 import abc
 
 from .api import SamsungMultiroomApi
-from .browser import DlnaBrowser
-from .browser import TuneInBrowser
 from .clock import Alarm
 from .clock import Clock
 from .clock import ClockGroup
@@ -13,6 +11,7 @@ from .equalizer import EqualizerGroup
 from .player import DlnaPlayer
 from .player import PlayerOperator
 from .player import TuneInPlayer
+from .service import ServiceRegistry
 
 
 class SpeakerDiscovery:
@@ -150,6 +149,22 @@ class SpeakerBase(metaclass=abc.ABCMeta):
         """Unmute the speaker."""
         raise NotImplementedError()
 
+    def get_services_names(self):
+        """
+        Get all supported services names.
+
+        :returns: List of strings
+        """
+        raise NotImplementedError()
+
+    def service(self, name):
+        """
+        Get service by type
+
+        :returns: Service instance
+        """
+        raise NotImplementedError()
+
     @property
     def clock(self):
         """
@@ -208,7 +223,7 @@ class SpeakerBase(metaclass=abc.ABCMeta):
 class Speaker(SpeakerBase):
     """Entry control for speaker operation."""
 
-    def __init__(self, api, clock, equalizer, player_operator, browsers=None):
+    def __init__(self, api, clock, equalizer, player_operator, service_registry):
         """
         Initialise the speaker.
 
@@ -216,16 +231,13 @@ class Speaker(SpeakerBase):
         :param clock: Clock instance
         :param equalizer: Equalizer instance
         :param player_operator: PlayerOperator instance
-        :param browsers: List of Browser instances
+        :param service_registry: ServiceRegistry instance
         """
         self._api = api
         self._clock = clock
         self._equalizer = equalizer
         self._player_operator = player_operator
-        self._browsers = {}
-
-        for browser in (browsers or []):
-            self._browsers[browser.get_name()] = browser
+        self._service_registry = service_registry
 
     @property
     def ip_address(self):
@@ -321,6 +333,22 @@ class Speaker(SpeakerBase):
         """Unmute the speaker."""
         self._api.set_mute(False)
 
+    def get_services_names(self):
+        """
+        Get all supported services names.
+
+        :returns: List of strings
+        """
+        return self._service_registry.get_services_names()
+
+    def service(self, name):
+        """
+        Get service by type
+
+        :returns: Service instance
+        """
+        return self._service_registry.service(name)
+
     @property
     def clock(self):
         """
@@ -356,7 +384,7 @@ class Speaker(SpeakerBase):
 
         :returns: Browser instance
         """
-        return self._browsers[name]
+        return self._service_registry.service(name).browser
 
     def group(self, name, speakers):
         """
@@ -522,12 +550,26 @@ class SpeakerGroup(SpeakerBase):
         for speaker in self._speakers:
             speaker.unmute()
 
+    def get_services_names(self):
+        """
+        Get all supported services names.
+
+        :returns: List of strings
+        """
+        return self._speakers[0].get_services_names()
+
+    def service(self, name):
+        """
+        Get service by type
+
+        :returns: Service instance
+        """
+        return self._speakers[0].service(name)
+
     @property
     def clock(self):
         """
         Get clock to control time functions.
-
-        todo: We need Clock composite to control all the clocks
 
         :returns: Clock instance
         """
@@ -537,8 +579,6 @@ class SpeakerGroup(SpeakerBase):
     def equalizer(self):
         """
         Get equalizer to control sound adjustments.
-
-        todo: We need Equalizer composite to control all the equalizers
 
         :returns: Equalizer instance
         """
@@ -613,9 +653,6 @@ def speaker_factory(ip_address):
     ]
     player_operator = PlayerOperator(api, players)
 
-    browsers = [
-        DlnaBrowser(api),
-        TuneInBrowser(api),
-    ]
+    service_registry = ServiceRegistry(api)
 
-    return Speaker(api, clock, equalizer, player_operator, browsers)
+    return Speaker(api, clock, equalizer, player_operator, service_registry)

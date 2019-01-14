@@ -901,6 +901,150 @@ class SamsungMultiroomApi:
         """
         self.get(COMMAND_UIC, 'SetUngroup')
 
+    def get_cp_list(self, start_index, list_count):
+        """
+        Get list of speakers app integrations.
+
+        :returns: List of dicts:
+            - cpid - id of app service
+            - cpname - service name
+            - signinstatus - 0/1
+            - username - (optionally if signed in) signed in user name
+            - istrial_user - (optionally) 1
+        """
+        params = [
+            ('liststartindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'GetCpList', params)
+
+        return response_list(response['cplist']['cp'])
+
+    def set_cp_service(self, cp_id):
+        """
+        Switch to a specific cp service.
+
+        It also initiates playback of that service.
+
+        :param cp_id: Cp service id as returned by get_cp_list()
+        """
+        params = [('cpservice_id', int(cp_id))]
+
+        self.get(COMMAND_CPM, 'SetCpService', params)
+
+    def get_cp_info(self):
+        """
+        Get info about currently active cp service.
+
+        :returns: Dict
+            - cpname
+            - timestamp - ISO format
+            - category
+            - signinstatus - 0/1
+            - username
+            - subscription_info
+            - audioinfo - Dict
+                - title
+                - streamtype - station|?
+                - thumbnail - thumbnail url
+                - playstatus - play|pause
+            },
+        """
+        return self.get(COMMAND_CPM, 'GetCpInfo')
+
+    def set_sign_in(self, username, password):
+        """
+        Authenticate with the currently active service.
+
+        :param username: Service username
+        :param password: Service password
+        """
+        params = [
+            ('username', username),
+            ('password', password),
+        ]
+
+        self.get(COMMAND_CPM, 'SetSignIn', params)
+
+    def set_sign_out(self):
+        """
+        Sign out from the currently active service.
+
+        You need to be authenticated for this call to be successful.
+        """
+        self.get(COMMAND_CPM, 'SetSignOut')
+
+    def get_cp_submenu(self):
+        """
+        Get list of top level service categories.
+
+        :returns: List of dicts:
+            - @id - id of the menu item
+            - submenuitem_localized - menu item name
+        """
+        response = self.get(COMMAND_CPM, 'GetCpSubmenu')
+
+        return response_list(response['submenu']['submenuitem'])
+
+    def set_select_cp_submenu(self, content_id, start_index, list_count):
+        """
+        Get list of sub categories.
+
+        Note, some items are autoplayable. By calling this method you might initiate playback.
+
+        :param content_id: parent id as returned by get_cp_submenu() or this method
+        :returns: List of dicts
+            - @type
+            - title
+            - contentid
+        """
+        params = [
+            ('contentid', int(content_id)),
+            ('startindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'SetSelectCpSubmenu', params)
+
+        return response_list(response['menulist']['menuitem'])
+
+    def get_cp_player_playlist(self, start_index, list_count):
+        """
+        Get currently active service playlist.
+
+        Note, some services have limit of items returned regardless of list_count passed.
+
+        :param start_index:
+        :param list_count:
+        :returns: List of dicts
+            - @type - 1
+            - @available - 0/1
+            - @currentplaying - (optional) 1 if present
+            - artist
+            - album
+            - mediaid - unique
+            - tracklength - track length in seconds
+            - title
+            - contentid
+            - thumbnail - thumbnail url
+
+        """
+        params = [
+            ('startindex', int(start_index)),
+            ('listcount', int(list_count)),
+        ]
+
+        response = self.get(COMMAND_CPM, 'GetCpPlayerPlaylist', params)
+
+        return response_list(response['menulist']['menuitem'])
+
+    def set_skip_current_track(self):
+        """
+        Skip current track and play next item on the playlist.
+        """
+        self.get(COMMAND_CPM, 'SetSkipCurrentTrack')
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""
