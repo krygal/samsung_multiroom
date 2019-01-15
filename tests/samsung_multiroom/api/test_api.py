@@ -1195,7 +1195,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
         })
 
     @httpretty.activate(allow_net_connect=False)
-    def test_set_play_select(self):
+    def test_set_play_select_single(self):
         httpretty.register_uri(
             httpretty.GET,
             'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetPlaySelect%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22selectitemid%22%20val%3D%220%22/%3E',
@@ -1214,6 +1214,27 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.set_play_select('0')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_play_select_multiple(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetPlaySelect%3C/name%3E%3Cp%20type%3D%22dec_arr%22%20name%3D%22selectitemids%22%20val%3D%22empty%22%3E%3Citem%3E1%3C/item%3E%3Citem%3E2%3C/item%3E%3Citem%3E3%3C/item%3E%3C/p%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>StopPlaybackEvent</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <playtime>131</playtime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_play_select(['1', '2', '3'])
 
     @httpretty.activate(allow_net_connect=False)
     def test_get_station_data(self):
@@ -2207,4 +2228,52 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
         )
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
-        playlist = api.set_skip_current_track()
+        api.set_skip_current_track()
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_current_play_time(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetCurrentPlayTime%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>MusicPlayTime</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <timelength>168</timelength>
+                        <playtime>121</playtime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        play_time = api.get_current_play_time()
+
+        self.assertEqual(play_time, {
+            'timelength': '168',
+            'playtime': '121',
+        })
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_play_cp_playlist_track(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/CPM?cmd=%3Cname%3ESetPlayCpPlaylistTrack%3C/name%3E%3Cp%20type%3D%22dec%22%20name%3D%22selectitemid%22%20val%3D%220%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>StopPlaybackEvent</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <playtime>3</playtime>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_play_cp_playlist_track(0)

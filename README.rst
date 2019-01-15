@@ -102,8 +102,6 @@ Example speaker control
 
 .. code:: python
 
-    # note: currently only dlna and tunein radio players are implemented, more are coming soon
-
     # create playlist from browser items (see above) and play
     speaker.player.play(browser)
 

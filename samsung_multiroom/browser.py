@@ -266,7 +266,7 @@ class AppBrowser(Browser):
         if 'contentid' in data:
             kwargs['object_id'] = data['contentid']
 
-        if '@type' in data and data['@type'] in ('1', '2', '4'):
+        if '@type' in data and data['@type'] in ('1', '2'):
             kwargs['object_type'] = 'app_audio'
         else:
             kwargs['object_type'] = 'container'

@@ -8,6 +8,7 @@ from .clock import ClockGroup
 from .clock import Timer
 from .equalizer import Equalizer
 from .equalizer import EqualizerGroup
+from .player import AppPlayer
 from .player import DlnaPlayer
 from .player import PlayerOperator
 from .player import TuneInPlayer
@@ -650,6 +651,7 @@ def speaker_factory(ip_address):
     players = [
         DlnaPlayer(api),
         TuneInPlayer(api),
+        AppPlayer(api),
     ]
     player_operator = PlayerOperator(api, players)
 

@@ -244,7 +244,7 @@ class SamsungMultiroomApi:
         """
         Pause/resume current playlist.
 
-        :param playback_control: resume|pause
+        :param playback_control: resume|pause|play
         """
         if playback_control not in ['resume', 'pause']:
             raise ValueError('Playback control must be one of: resume, pause')
@@ -587,14 +587,22 @@ class SamsungMultiroomApi:
 
         return response_list(response['menulist']['menuitem'])
 
-    def set_play_select(self, content_id):
+    def set_play_select(self, content_ids):
         """
-        Plays selected radio.
+        Plays selected radio or app item.
 
-        :param content_id: Content id as returned by get_upper_radio_list(), get_select_radio_list() or
-            get_current_radio_list()
+        :param content_ids: Content id as returned by get_upper_radio_list(), get_select_radio_list() or
+            get_current_radio_list(), or list of content ids
         """
-        params = [('selectitemid', int(content_id))]
+        if not isinstance(content_ids, list):
+            content_ids = [content_ids]
+
+        if len(content_ids) > 1:
+            params = [('selectitemids', [int(id) for id in content_ids])]
+        elif content_ids:
+            params = [('selectitemid', int(content_ids[0]))]
+        else:
+            params = [('selectitemid', '')]
 
         self.get(COMMAND_CPM, 'SetPlaySelect', params)
 
@@ -1045,6 +1053,26 @@ class SamsungMultiroomApi:
         """
         self.get(COMMAND_CPM, 'SetSkipCurrentTrack')
 
+    def get_current_play_time(self):
+        """
+        Get info about current track playback position and length.
+
+        :returns: Dict
+            - tracklength - track length in seconds
+            - playtime - playback position in seconds
+        """
+        return self.get(COMMAND_UIC, 'GetCurrentPlayTime')
+
+    def set_play_cp_playlist_track(self, item_id):
+        """
+        Advance playback to specific track on the playlist.
+
+        :param item_id: Item id as returned by get_cp_player_playlist()
+        """
+        params = [('selectitemid', int(item_id))]
+
+        return self.get(COMMAND_CPM, 'SetPlayCpPlaylistTrack', params)
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""
@@ -1070,18 +1098,30 @@ def format_action(action):
 
 
 def format_param(param):
-    """Format request parameter."""
+    """
+    Format request parameter.
+
+    :param param: Tuple e.g. ('list_count', 30, 'dec')
+        - name - name of the param
+        - value - mixed value
+        - type_hint - (optionally) str|dec|cdata|dec_arr
+    """
     (name, value, *attributes) = param
 
     if not attributes:
         type_hint = 'str'
         if isinstance(value, int):
             type_hint = 'dec'
+        if isinstance(value, list) and value and isinstance(value[0], int):
+            type_hint = 'dec_arr'
     else:
         type_hint = attributes[0]
 
     if type_hint == 'cdata':
         return '<p type="{0}" name="{1}" val="empty"><![CDATA[{2}]]></p>'.format(type_hint, name, value)
+    if type_hint == 'dec_arr':
+        value = ''.join(['<item>{0}</item>'.format(v) for v in value])
+        return '<p type="{0}" name="{1}" val="empty">{2}</p>'.format(type_hint, name, value)
 
     return '<p type="{0}" name="{1}" val="{2}"/>'.format(type_hint, name, value)
 
