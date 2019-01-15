@@ -27,16 +27,18 @@ class SamsungMultiroomApi:
     Contains non-inclusive list of API calls you can make to control the speaker.
     """
 
-    def __init__(self, ip_address, port=55001):
+    def __init__(self, ip_address, port=55001, timeout=5):
         """
         Initialise endpoint.
 
         :param ip_address: IP address of the speaker to connect to
         :param port: Port to use, defaults to 55001
+        :param timeout: Timeout in seconds
         """
         self._ip_address = ip_address
         self._port = port
         self._endpoint = 'http://{0}:{1}'.format(ip_address, port)
+        self._timeout = timeout
         self._uuid = str(uuid.uuid1())
 
     @property
@@ -79,7 +81,7 @@ class SamsungMultiroomApi:
 
         try:
             _LOGGER.debug('Request %s. Raw payload %s', url, payload)
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=self._timeout)
 
             return self._parse_response_text(response.text)
         except requests.exceptions.RequestException:
@@ -144,7 +146,7 @@ class SamsungMultiroomApi:
         """
         path = '/{0}?cmd={1}'.format(COMMAND_UIC, urllib.parse.quote(format_payload('GetMainInfo')))
 
-        stream = ApiStream(self._ip_address, self._port)
+        stream = ApiStream(self._ip_address, self._port, self._timeout)
 
         # Speaker sends two http responses for this request, latter one contains correct payload. We attempt
         # to fetch both responses and read/parse both.

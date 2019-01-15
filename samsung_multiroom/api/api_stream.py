@@ -30,15 +30,17 @@ class ApiStream:
             print(response.data)
     """
 
-    def __init__(self, ip_address, port=55001):
+    def __init__(self, ip_address, port=55001, timeout=None):
         """
         Initialise stream.
 
         :param ip_address: IP address of the speaker to connect to
         :param port: Port to use, defaults to 55001
+        :param timeout: Timeout in seconds
         """
         self._ip_address = ip_address
         self._port = port
+        self._timeout = timeout
         self._continue_stream = False
 
     def open(self, uri):
@@ -59,6 +61,7 @@ class ApiStream:
 
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect((self._ip_address, self._port))
+                sock.settimeout(self._timeout)
                 sock.send('GET {0} HTTP/1.1\r\n'.format(uri).encode())
                 sock.send('Host: {0}:{1}\r\n'.format(self._ip_address, self._port).encode())
                 sock.send('\r\n\r\n'.encode())
@@ -85,6 +88,8 @@ class ApiStream:
                             yield ApiResponse(full_body)
 
                         data = data[parsed_length:]
+            except socket.error:
+                _LOGGER.error('Socket exception', exc_info=1)
             finally:
                 _LOGGER.debug('Closing the stream')
                 sock.shutdown(socket.SHUT_RDWR)
