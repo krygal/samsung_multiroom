@@ -1842,6 +1842,28 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
         api.set_ungroup()
 
     @httpretty.activate(allow_net_connect=False)
+    def test_set_group_name(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetGroupName%3C/name%3E%3Cp%20type%3D%22cdata%22%20name%3D%22groupname%22%20val%3D%22empty%22%3E%3C%21%5BCDATA%5BUpdated%20group%20name%5D%5D%3E%3C/p%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>GroupName</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <groupname><![CDATA[Updated group name]]></groupname>
+                    </response>
+                </UIC>"""
+        )
+
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_group_name('Updated group name')
+
+    @httpretty.activate(allow_net_connect=False)
     def test_get_cp_list(self):
         httpretty.register_uri(
             httpretty.GET,

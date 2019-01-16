@@ -55,6 +55,8 @@ class TestSpeakerGroup(unittest.TestCase):
 
         self.assertEqual(name, 'Updated group name')
 
+        api.set_group_name.assert_called_once_with('Updated group name')
+
     def test_get_volume_returns_main_speaker_volume(self):
         speaker_group, api, speakers = _get_speaker_group()
         speakers[0].get_volume.return_value = 13

@@ -911,6 +911,16 @@ class SamsungMultiroomApi:
         """
         self.get(COMMAND_UIC, 'SetUngroup')
 
+    def set_group_name(self, name):
+        """
+        Update speaker's group name.
+
+        :param name: new name
+        """
+        params = [('groupname', name, 'cdata')]
+
+        self.get(COMMAND_UIC, 'SetGroupName', params)
+
     def get_cp_list(self, start_index, list_count):
         """
         Get list of speakers app integrations.

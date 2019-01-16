@@ -473,11 +473,9 @@ class SpeakerGroup(SpeakerBase):
         """
         Set group name.
 
-        Works only locally.
-        todo: investigate if group name can be updated without recreating the group
-
         :param name: New group name
         """
+        self._api.set_group_name(name)
         self._name = name
 
     def get_volume(self):
