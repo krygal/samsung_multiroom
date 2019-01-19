@@ -2,9 +2,8 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import call
 
-from samsung_multiroom.browser import DlnaBrowser
-from samsung_multiroom.browser import Item
-from samsung_multiroom.browser import path_to_folders
+from samsung_multiroom.service import Item
+from samsung_multiroom.service.dlna import DlnaBrowser
 
 
 def get_dms_list_return_value():
@@ -107,14 +106,6 @@ def pc_get_music_list_by_id_side_effect(device_udn, parent_id, start_index, list
 
 
 class TestDlnaBrowser(unittest.TestCase):
-
-    def test_path_to_folders(self):
-        self.assertEqual(path_to_folders(None), [None])
-        self.assertEqual(path_to_folders(''), [None])
-        self.assertEqual(path_to_folders('/'), [None])
-        self.assertEqual(path_to_folders('/Folder1'), [None, 'Folder1'])
-        self.assertEqual(path_to_folders('/Folder1/'), [None, 'Folder1'])
-        self.assertEqual(path_to_folders('/Folder1/Folder2/Folder3/'), [None, 'Folder1', 'Folder2', 'Folder3'])
 
     @unittest.mock.patch('inspect.signature')
     def test_browse_from_root(self, signature):

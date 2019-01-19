@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.player import AppPlayer
+from samsung_multiroom.service.app import AppPlayer
 
 
 def _get_player():

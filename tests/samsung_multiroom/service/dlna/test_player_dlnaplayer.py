@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.player import DlnaPlayer
+from samsung_multiroom.service.dlna import DlnaPlayer
 
 
 class TestDlnaPlayer(unittest.TestCase):

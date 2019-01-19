@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.browser import TuneInBrowser
-from samsung_multiroom.service import TuneInService
+from samsung_multiroom.service.tunein import TuneInBrowser
+from samsung_multiroom.service.tunein import TuneInService
 
 
 def _get_service():

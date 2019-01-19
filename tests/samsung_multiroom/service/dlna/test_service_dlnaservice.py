@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.browser import DlnaBrowser
-from samsung_multiroom.service import DlnaService
+from samsung_multiroom.service.dlna import DlnaBrowser
+from samsung_multiroom.service.dlna import DlnaService
 
 
 def _get_service():

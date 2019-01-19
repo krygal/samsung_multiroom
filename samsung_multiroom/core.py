@@ -8,11 +8,11 @@ from .clock import ClockGroup
 from .clock import Timer
 from .equalizer import Equalizer
 from .equalizer import EqualizerGroup
-from .player import AppPlayer
-from .player import DlnaPlayer
-from .player import PlayerOperator
-from .player import TuneInPlayer
+from .service import PlayerOperator
 from .service import ServiceRegistry
+from .service.app import AppPlayer
+from .service.dlna import DlnaPlayer
+from .service.tunein import TuneInPlayer
 
 
 class SpeakerDiscovery:

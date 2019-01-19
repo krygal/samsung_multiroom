@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import call
 
-from samsung_multiroom.browser import AppBrowser
-from samsung_multiroom.browser import Item
+from samsung_multiroom.service import Item
+from samsung_multiroom.service.app import AppBrowser
 
 
 def _get_browser():

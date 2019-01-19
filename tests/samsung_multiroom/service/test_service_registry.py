@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.service import AppService
-from samsung_multiroom.service import DlnaService
 from samsung_multiroom.service import ServiceRegistry
-from samsung_multiroom.service import TuneInService
+from samsung_multiroom.service.app import AppService
+from samsung_multiroom.service.dlna import DlnaService
+from samsung_multiroom.service.tunein import TuneInService
 
 
 def _get_service_registry():

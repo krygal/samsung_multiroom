@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.player import TuneInPlayer
+from samsung_multiroom.service.tunein import TuneInPlayer
 
 
 def get_preset_list_return_value():

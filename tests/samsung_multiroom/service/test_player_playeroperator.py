@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.player import NullPlayer
-from samsung_multiroom.player import Player
-from samsung_multiroom.player import PlayerOperator
+from samsung_multiroom.service import NullPlayer
+from samsung_multiroom.service import Player
+from samsung_multiroom.service import PlayerOperator
 
 
 def get_mocks():

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from samsung_multiroom.player import NullPlayer
+from samsung_multiroom.service import NullPlayer
 
 
 class TestNullPlayer(unittest.TestCase):
