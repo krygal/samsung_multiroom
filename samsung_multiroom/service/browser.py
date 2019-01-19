@@ -1,7 +1,8 @@
 """Abstract media browser and item."""
+import abc
 
 
-class Browser:
+class Browser(metaclass=abc.ABCMeta):
     """
     Abstract media browser.
 
@@ -16,6 +17,7 @@ class Browser:
         self._path = path
         self._items = items.copy() if items else []
 
+    @abc.abstractmethod
     def get_name(self):
         """
         :returns: Name of the browser
@@ -28,6 +30,7 @@ class Browser:
         """
         return self._path
 
+    @abc.abstractmethod
     def browse(self, path=None):
         """
         List items based on path.
