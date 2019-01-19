@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import MagicMock
 
 from samsung_multiroom import SamsungMultiroomSpeaker
-from samsung_multiroom.core import Speaker
-from samsung_multiroom.core import SpeakerGroup
+from samsung_multiroom.group import SpeakerGroup
+from samsung_multiroom.speaker import Speaker
 
 
 def get_speaker():

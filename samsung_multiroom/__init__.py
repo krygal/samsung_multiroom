@@ -2,8 +2,9 @@
 Init.
 """
 # pylint: disable=C0103
-from . import core
+from . import factory
+from . import discovery
 
 # aliases
-SamsungMultiroomSpeaker = core.speaker_factory
-SamsungSpeakerDiscovery = core.SpeakerDiscovery
+SamsungMultiroomSpeaker = factory.speaker_factory
+SamsungSpeakerDiscovery = discovery.SpeakerDiscovery

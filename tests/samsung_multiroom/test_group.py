@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import MagicMock
 
 from samsung_multiroom.clock import ClockGroup
-from samsung_multiroom.core import SpeakerGroup
 from samsung_multiroom.equalizer import EqualizerGroup
+from samsung_multiroom.group import SpeakerGroup
 
 
 def _get_speaker_group():
