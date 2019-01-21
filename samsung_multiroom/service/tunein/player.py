@@ -1,5 +1,6 @@
 """TuneIn service player."""
 from ...api import paginator
+from ..player import REPEAT_OFF
 from ..player import Player
 from ..player import Track
 from ..player import init_track_kwargs
@@ -58,6 +59,13 @@ class TuneInPlayer(Player):
     def previous(self):
         """Play previous radio from the preset list."""
         self._previous_next_preset(-1)
+
+    def repeat(self, mode):
+        """Not supported for radio."""
+
+    def get_repeat(self):
+        """Not supported for radio."""
+        return REPEAT_OFF
 
     def get_current_track(self):
         """

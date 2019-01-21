@@ -9,6 +9,7 @@ from .player import Player
 from .player import PlayerOperator
 from .player import NullPlayer
 from .player import Track
+from .player import REPEAT_ONE, REPEAT_ALL, REPEAT_OFF
 
 from .service import Service
 

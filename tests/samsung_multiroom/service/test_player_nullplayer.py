@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
+from samsung_multiroom.service import REPEAT_OFF
+from samsung_multiroom.service import REPEAT_ONE
 from samsung_multiroom.service import NullPlayer
 
 
@@ -37,6 +39,16 @@ class TestNullPlayer(unittest.TestCase):
     def test_get_current_track(self):
         player = NullPlayer()
         track = player.get_current_track()
+
+    def test_repeat(self):
+        player = NullPlayer()
+        player.repeat(REPEAT_ONE)
+
+    def test_get_repeat(self):
+        player = NullPlayer()
+        repeat = player.get_repeat()
+
+        self.assertEqual(repeat, REPEAT_OFF)
 
     def test_is_supported(self):
         player = NullPlayer()

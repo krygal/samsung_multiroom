@@ -1,4 +1,5 @@
 """Generic music streaming app service player."""
+from ..player import REPEAT_OFF
 from ..player import Player
 from ..player import Track
 from ..player import init_track_kwargs
@@ -66,6 +67,13 @@ class AppPlayer(Player):
                 previous_index = max(0, i - 1)
 
                 self._api.set_play_cp_playlist_track(playlist[previous_index]['contentid'])
+
+    def repeat(self, mode):
+        """Not supported for apps."""
+
+    def get_repeat(self):
+        """Not supported for apps."""
+        return REPEAT_OFF
 
     def get_current_track(self):
         """

@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
+from samsung_multiroom.service import REPEAT_ALL
+from samsung_multiroom.service import REPEAT_ONE
 from samsung_multiroom.service import NullPlayer
 from samsung_multiroom.service import Player
 from samsung_multiroom.service import PlayerOperator
@@ -143,6 +145,23 @@ class TestPlayerOperator(unittest.TestCase):
 
         players[0].previous.assert_not_called()
         players[1].previous.assert_called_once()
+
+    def test_repeat(self):
+        player_operator, api, players = get_mocks()
+        player_operator.repeat(REPEAT_ONE)
+
+        players[0].repeat.assert_not_called()
+        players[1].repeat.assert_called_once_with(REPEAT_ONE)
+
+    def test_get_repeat(self):
+        player_operator, api, players = get_mocks()
+
+        players[1].get_repeat.return_value = REPEAT_ALL
+
+        repeat = player_operator.get_repeat()
+
+        players[0].get_repeat.assert_not_called()
+        players[1].get_repeat.assert_called_once()
 
     def test_get_current_track(self):
         player_operator, api, players = get_mocks()

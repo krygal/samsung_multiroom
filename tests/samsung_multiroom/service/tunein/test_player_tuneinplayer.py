@@ -1,11 +1,14 @@
 import unittest
 from unittest.mock import MagicMock
 
+from samsung_multiroom.service import REPEAT_ALL
+from samsung_multiroom.service import REPEAT_OFF
 from samsung_multiroom.service.tunein import TuneInPlayer
 
 
-def get_preset_list_return_value():
-    return [
+def _get_player():
+    api = MagicMock()
+    api.get_preset_list.return_value = [
         {
             'kind': 'speaker',
             'title': 'Radio 1',
@@ -47,10 +50,7 @@ def get_preset_list_return_value():
             'mediaid': '5555',
         },
     ]
-
-
-def get_radio_info_return_value():
-    return {
+    api.get_radio_info.return_value = {
         'cpname': 'TuneIn',
         'root': 'Favorites',
         'presetindex': '0',
@@ -63,6 +63,10 @@ def get_radio_info_return_value():
         'no_queue': '1',
         'playstatus': 'play',
     }
+
+    player = TuneInPlayer(api)
+
+    return (player, api)
 
 
 class TestTuneInPlayer(unittest.TestCase):
@@ -91,10 +95,9 @@ class TestTuneInPlayer(unittest.TestCase):
             })
         ]
 
-        api = MagicMock()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
-        self.assertTrue(player.play(playlist))
+        player.play(playlist)
 
         api.set_play_select.assert_called_once_with('2')
 
@@ -112,40 +115,35 @@ class TestTuneInPlayer(unittest.TestCase):
             })
         ]
 
-        api = MagicMock()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         self.assertFalse(player.play(playlist))
 
         api.set_play_select.assert_not_called()
 
     def test_jump(self):
-        api = MagicMock()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         player.jump(50)
 
         api.set_search_time.assert_not_called()
 
     def test_resume(self):
-        api = MagicMock()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         player.resume()
 
         api.set_select_radio.assert_called_once()
 
     @unittest.skip('Pending implementation')
     def test_stop(self):
-        api = MagicMock()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         player.stop()
 
     def test_pause(self):
-        api = MagicMock()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         player.pause()
 
         api.set_playback_control.assert_called_once_with('pause')
@@ -154,11 +152,8 @@ class TestTuneInPlayer(unittest.TestCase):
     def test_next(self, signature):
         signature.return_value = type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}})
 
-        api = MagicMock()
-        api.get_preset_list.return_value = get_preset_list_return_value()
-        api.get_radio_info.return_value = get_radio_info_return_value()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         player.next()
 
         api.get_preset_list.assert_called_once_with(start_index=0, list_count=30)
@@ -170,11 +165,8 @@ class TestTuneInPlayer(unittest.TestCase):
     def test_previous(self, signature):
         signature.return_value = type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}})
 
-        api = MagicMock()
-        api.get_preset_list.return_value = get_preset_list_return_value()
-        api.get_radio_info.return_value = get_radio_info_return_value()
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
         player.previous()
 
         api.get_preset_list.assert_called_once_with(start_index=0, list_count=30)
@@ -182,11 +174,25 @@ class TestTuneInPlayer(unittest.TestCase):
         api.set_play_preset.assert_called_once_with(0, 4)
         api.set_select_radio.assert_called_once()
 
-    def test_get_current_track(self):
-        api = MagicMock()
-        api.get_radio_info.return_value = get_radio_info_return_value()
+    def test_repeat(self):
+        player, api = _get_player()
 
-        player = TuneInPlayer(api)
+        player.repeat(REPEAT_ALL)
+
+        api.set_repeat_mode.assert_not_called()
+
+    def test_get_repeat(self):
+        player, api = _get_player()
+
+        repeat = player.get_repeat()
+
+        self.assertEqual(repeat, REPEAT_OFF)
+
+        api.get_repeat_mode.assert_not_called()
+
+    def test_get_current_track(self):
+        player, api = _get_player()
+
         track = player.get_current_track()
 
         api.get_radio_info.assert_called_once()
@@ -201,9 +207,7 @@ class TestTuneInPlayer(unittest.TestCase):
         self.assertEqual(track.object_type, 'tunein_radio')
 
     def test_is_supported(self):
-        api = MagicMock()
-
-        player = TuneInPlayer(api)
+        player, api = _get_player()
 
         self.assertTrue(player.is_supported('wifi', 'cp'))
         self.assertFalse(player.is_supported('wifi', 'dlna'))

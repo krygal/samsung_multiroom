@@ -1,4 +1,7 @@
 """DLNA service player."""
+from ..player import REPEAT_ALL
+from ..player import REPEAT_OFF
+from ..player import REPEAT_ONE
 from ..player import Player
 from ..player import Track
 from ..player import init_track_kwargs
@@ -71,6 +74,39 @@ class DlnaPlayer(Player):
     def previous(self):
         """Play previous track in the queue."""
         self._api.set_trick_mode('previous')
+
+    def repeat(self, mode):
+        """
+        Set playback repeat mode.
+
+        :param mode: one of REPEAT_* constants
+        """
+        mode_map = {
+            REPEAT_ALL: 'all',
+            REPEAT_ONE: 'one',
+            REPEAT_OFF: 'off',
+        }
+
+        if mode not in mode_map:
+            raise ValueError('mode must be one of REPEAT_* constants')
+
+        self._api.set_repeat_mode(mode_map[mode])
+
+    def get_repeat(self):
+        """
+        Get playback repeat mode.
+
+        :returns: one of REPEAT_* constants
+        """
+        mode_map = {
+            'all': REPEAT_ALL,
+            'one': REPEAT_ONE,
+            'off': REPEAT_OFF,
+        }
+
+        mode = self._api.get_repeat_mode()
+
+        return mode_map[mode]
 
     def get_current_track(self):
         """

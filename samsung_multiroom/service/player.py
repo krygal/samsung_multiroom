@@ -1,6 +1,11 @@
 """Player allows playback control depending on selected source."""
 import abc
 
+# repeat mode constants
+REPEAT_ONE = 'one'
+REPEAT_ALL = 'all'
+REPEAT_OFF = 'off'
+
 
 class Player(metaclass=abc.ABCMeta):
     """Player interface to control playback functions."""
@@ -50,6 +55,24 @@ class Player(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def previous(self):
         """Play previous track in the queue."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def repeat(self, mode):
+        """
+        Set playback repeat mode.
+
+        :param mode: one of REPEAT_* constants
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_repeat(self):
+        """
+        Get playback repeat mode.
+
+        :returns: one of REPEAT_* constants
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -156,6 +179,22 @@ class PlayerOperator(Player):
         """Play previous track in the queue."""
         self.get_player().previous()
 
+    def repeat(self, mode):
+        """
+        Set playback repeat mode.
+
+        :param mode: one of REPEAT_* constants
+        """
+        self.get_player().repeat(mode)
+
+    def get_repeat(self):
+        """
+        Get playback repeat mode.
+
+        :returns: one of REPEAT_* constants
+        """
+        return self.get_player().get_repeat()
+
     def get_current_track(self):
         """
         Get current track info.
@@ -206,6 +245,13 @@ class NullPlayer(Player):
 
     def previous(self):
         """Do nothing."""
+
+    def repeat(self, mode):
+        """Do nothing."""
+
+    def get_repeat(self):
+        """Always off."""
+        return REPEAT_OFF
 
     def get_current_track(self):
         """

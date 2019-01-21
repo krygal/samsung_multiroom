@@ -2299,3 +2299,47 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
 
         api = SamsungMultiroomApi('192.168.1.129', 55001)
         api.set_play_cp_playlist_track(0)
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_get_repeat_mode(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3EGetRepeatMode%3C/name%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>RepeatMode</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <repeat>off</repeat>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        repeat_mode = api.get_repeat_mode()
+
+        self.assertEqual(repeat_mode, 'off')
+
+    @httpretty.activate(allow_net_connect=False)
+    def test_set_repeat_mode(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://192.168.1.129:55001/UIC?cmd=%3Cname%3ESetRepeatMode%3C/name%3E%3Cp%20type%3D%22str%22%20name%3D%22repeatmode%22%20val%3D%22one%22/%3E',
+            match_querystring=True,
+            body="""<?xml version="1.0" encoding="UTF-8"?>
+                <UIC>
+                    <method>RepeatMode</method>
+                    <version>1.0</version>
+                    <speakerip>192.168.1.129</speakerip>
+                    <user_identifier>public</user_identifier>
+                    <response result="ok">
+                        <repeat>one</repeat>
+                    </response>
+                </UIC>"""
+        )
+
+        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api.set_repeat_mode('one')

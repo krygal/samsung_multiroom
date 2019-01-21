@@ -109,6 +109,10 @@ Example speaker control
     speaker.player.pause()
     speaker.player.resume()
 
+    # repeat mode
+    from samsung_multiroom import REPEAT_ALL, REPEAT_ONE, REPEAT_OFF
+    speaker.player.repeat(REPEAT_ALL)
+
     # get track info
     track = speaker.player.get_current_track()
     print(track)

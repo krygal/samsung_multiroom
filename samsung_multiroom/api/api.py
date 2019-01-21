@@ -1085,6 +1085,26 @@ class SamsungMultiroomApi:
 
         return self.get(COMMAND_CPM, 'SetPlayCpPlaylistTrack', params)
 
+    def get_repeat_mode(self):
+        """
+        Get playback repeat mode.
+
+        :returns: string one|all|off for repeat one track, all tracks on the playlist, or disabled repeat mode
+        """
+        response = self.get(COMMAND_UIC, 'GetRepeatMode')
+
+        return response['repeat']
+
+    def set_repeat_mode(self, mode):
+        """
+        Set playback repeat mode.
+
+        :param mode: string one|all|off for repeat one track, all tracks on the playlist, or disabled repeat mode
+        """
+        params = [('repeatmode', mode)]
+
+        self.get(COMMAND_UIC, 'SetRepeatMode', params)
+
 
 def on_off_bool(value):
     """Convert on/off to True/False correspondingly."""

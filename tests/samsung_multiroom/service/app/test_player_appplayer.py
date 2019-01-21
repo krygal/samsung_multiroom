@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import MagicMock
 
+from samsung_multiroom.service import REPEAT_ALL
+from samsung_multiroom.service import REPEAT_OFF
 from samsung_multiroom.service.app import AppPlayer
 
 
@@ -102,6 +104,22 @@ class TestAppPlayer(unittest.TestCase):
         player.previous()
 
         api.set_play_cp_playlist_track.assert_called_once_with('1')
+
+    def test_repeat(self):
+        player, api = _get_player()
+
+        player.repeat(REPEAT_ALL)
+
+        api.set_repeat_mode.assert_not_called()
+
+    def test_get_repeat(self):
+        player, api = _get_player()
+
+        repeat = player.get_repeat()
+
+        self.assertEqual(repeat, REPEAT_OFF)
+
+        api.get_repeat_mode.assert_not_called()
 
     def test_get_current_track(self):
         player, api = _get_player()
