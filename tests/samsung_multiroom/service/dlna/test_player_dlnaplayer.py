@@ -189,9 +189,9 @@ class TestDlnaPlayer(unittest.TestCase):
         self.assertEqual(track.object_id, '22$@52947')
         self.assertEqual(track.object_type, 'dlna_audio')
 
-    def test_is_supported(self):
+    def test_is_active(self):
         player, api = _get_player()
 
-        self.assertTrue(player.is_supported('wifi', 'dlna'))
-        self.assertFalse(player.is_supported('wifi', 'cp'))
-        self.assertFalse(player.is_supported('bt'))
+        self.assertTrue(player.is_active('wifi', 'dlna'))
+        self.assertFalse(player.is_active('wifi', 'cp'))
+        self.assertFalse(player.is_active('bt'))

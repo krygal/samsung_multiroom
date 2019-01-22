@@ -206,9 +206,9 @@ class TestTuneInPlayer(unittest.TestCase):
         self.assertEqual(track.object_id, None)
         self.assertEqual(track.object_type, 'tunein_radio')
 
-    def test_is_supported(self):
+    def test_is_active(self):
         player, api = _get_player()
 
-        self.assertTrue(player.is_supported('wifi', 'cp'))
-        self.assertFalse(player.is_supported('wifi', 'dlna'))
-        self.assertFalse(player.is_supported('bt'))
+        self.assertTrue(player.is_active('wifi', 'cp'))
+        self.assertFalse(player.is_active('wifi', 'dlna'))
+        self.assertFalse(player.is_active('bt'))

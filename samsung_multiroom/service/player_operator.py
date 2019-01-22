@@ -42,7 +42,7 @@ class PlayerOperator(Player):
         submode = func['submode']
 
         for player in self._players:
-            if player.is_supported(function, submode):
+            if player.is_active(function, submode):
                 return player
 
         return NullPlayer()
@@ -112,14 +112,14 @@ class PlayerOperator(Player):
         """
         return self.get_player().get_current_track()
 
-    def is_supported(self, function, submode=None):
+    def is_active(self, function, submode=None):
         """
-        Check if this player supports function/submode.
+        Check if this player is active based on current function/submode.
 
         :returns: Boolean True if function/submode is supported
         """
         for player in self._players:
-            if player.is_supported(function, submode):
+            if player.is_active(function, submode):
                 return True
 
         return False
@@ -170,9 +170,9 @@ class NullPlayer(Player):
         """
         return None
 
-    def is_supported(self, function, submode=None):
+    def is_active(self, function, submode=None):
         """
-        Check if this player supports function/submode.
+        Check if this player is active based on current function/submode.
 
         :returns: Boolean True
         """

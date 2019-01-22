@@ -50,10 +50,10 @@ class TestNullPlayer(unittest.TestCase):
 
         self.assertEqual(repeat, REPEAT_OFF)
 
-    def test_is_supported(self):
+    def test_is_active(self):
         player = NullPlayer()
 
-        self.assertTrue(player.is_supported('wifi', 'cp'))
-        self.assertTrue(player.is_supported('wifi', 'dlna'))
-        self.assertTrue(player.is_supported('bt'))
-        self.assertTrue(player.is_supported(None))
+        self.assertTrue(player.is_active('wifi', 'cp'))
+        self.assertTrue(player.is_active('wifi', 'dlna'))
+        self.assertTrue(player.is_active('bt'))
+        self.assertTrue(player.is_active(None))

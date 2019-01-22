@@ -13,9 +13,9 @@ def get_mocks():
     api.get_func.return_value = {'function': 'test_function', 'submode': 'test_submode'}
 
     player1 = MagicMock(spec=Player, name='player1')
-    player1.is_supported.return_value = False
+    player1.is_active.return_value = False
     player2 = MagicMock(spec=Player, name='player2')
-    player2.is_supported.return_value = True
+    player2.is_active.return_value = True
 
     player_operator = PlayerOperator(api, [player1, player2])
 
@@ -37,32 +37,32 @@ class TestPlayerOperator(unittest.TestCase):
         api.get_func.return_value = {'function': 'test_function', 'submode': 'test_submode'}
 
         player1 = MagicMock(spec=Player, name='player1')
-        player1.is_supported.return_value = False
+        player1.is_active.return_value = False
         player2 = MagicMock(spec=Player, name='player2')
-        player2.is_supported.return_value = True
+        player2.is_active.return_value = True
 
         player_operator = PlayerOperator(api, [player1, player2])
         player = player_operator.get_player()
 
         self.assertEqual(player, player2)
-        player1.is_supported.assert_called_once_with('test_function', 'test_submode')
-        player2.is_supported.assert_called_once_with('test_function', 'test_submode')
+        player1.is_active.assert_called_once_with('test_function', 'test_submode')
+        player2.is_active.assert_called_once_with('test_function', 'test_submode')
 
     def test_get_player_returns_nullplayer_if_no_supported(self):
         api = MagicMock()
         api.get_func.return_value = {'function': 'test_function', 'submode': 'test_submode'}
 
         player1 = MagicMock(spec=Player, name='player1')
-        player1.is_supported.return_value = False
+        player1.is_active.return_value = False
         player2 = MagicMock(spec=Player, name='player2')
-        player2.is_supported.return_value = False
+        player2.is_active.return_value = False
 
         player_operator = PlayerOperator(api, [player1, player2])
         player = player_operator.get_player()
 
         self.assertIsInstance(player, NullPlayer)
-        player1.is_supported.assert_called_once_with('test_function', 'test_submode')
-        player2.is_supported.assert_called_once_with('test_function', 'test_submode')
+        player1.is_active.assert_called_once_with('test_function', 'test_submode')
+        player2.is_active.assert_called_once_with('test_function', 'test_submode')
 
     def test_get_play(self):
         api = MagicMock()
@@ -174,20 +174,20 @@ class TestPlayerOperator(unittest.TestCase):
         players[0].get_current_track.assert_not_called()
         players[1].get_current_track.assert_called_once()
 
-    def test_is_supported(self):
+    def test_is_active(self):
         player_operator, api, players = get_mocks()
-        self.assertTrue(player_operator.is_supported('test_function', 'test_submode'))
+        self.assertTrue(player_operator.is_active('test_function', 'test_submode'))
 
-        players[0].is_supported.assert_called_once_with('test_function', 'test_submode')
-        players[1].is_supported.assert_called_once_with('test_function', 'test_submode')
+        players[0].is_active.assert_called_once_with('test_function', 'test_submode')
+        players[1].is_active.assert_called_once_with('test_function', 'test_submode')
 
-    def test_is_supported_returns_false(self):
+    def test_is_active_returns_false(self):
         player_operator, api, players = get_mocks()
 
-        players[0].is_supported.return_value = False
-        players[1].is_supported.return_value = False
+        players[0].is_active.return_value = False
+        players[1].is_active.return_value = False
 
-        self.assertFalse(player_operator.is_supported('test_function', 'test_submode'))
+        self.assertFalse(player_operator.is_active('test_function', 'test_submode'))
 
-        players[0].is_supported.assert_called_once_with('test_function', 'test_submode')
-        players[1].is_supported.assert_called_once_with('test_function', 'test_submode')
+        players[0].is_active.assert_called_once_with('test_function', 'test_submode')
+        players[1].is_active.assert_called_once_with('test_function', 'test_submode')

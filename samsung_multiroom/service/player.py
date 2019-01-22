@@ -85,9 +85,9 @@ class Player(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def is_supported(self, function, submode=None):
+    def is_active(self, function, submode=None):
         """
-        Check if this player supports function/submode.
+        Check if this player is active based on current function/submode.
 
         :returns: Boolean True if function/submode is supported
         """
