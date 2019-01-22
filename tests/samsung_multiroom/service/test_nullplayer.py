@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 from samsung_multiroom.service import REPEAT_OFF
 from samsung_multiroom.service import REPEAT_ONE
-from samsung_multiroom.service import NullPlayer
+from samsung_multiroom.service.player_operator import NullPlayer
 
 
 class TestNullPlayer(unittest.TestCase):

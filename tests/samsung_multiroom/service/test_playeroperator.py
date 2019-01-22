@@ -3,9 +3,9 @@ from unittest.mock import MagicMock
 
 from samsung_multiroom.service import REPEAT_ALL
 from samsung_multiroom.service import REPEAT_ONE
-from samsung_multiroom.service import NullPlayer
 from samsung_multiroom.service import Player
 from samsung_multiroom.service import PlayerOperator
+from samsung_multiroom.service.player_operator import NullPlayer
 
 
 def get_mocks():
