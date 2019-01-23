@@ -1,6 +1,8 @@
 """Select the right player for the current source."""
 from .player import REPEAT_OFF
 from .player import Player
+from .player import get_is_supported_function_name
+from .player import unsupported
 
 
 class PlayerOperator(Player):
@@ -124,10 +126,20 @@ class PlayerOperator(Player):
 
         return False
 
+    def __getattribute__(self, name):
+        """
+        Delegates is_[function_name]_supported to the currently active player.
+        """
+        if get_is_supported_function_name(name) is None:
+            return super().__getattribute__(name)
+
+        return getattr(self.get_player(), name)
+
 
 class NullPlayer(Player):
     """Catch all player if no others supported current function."""
 
+    @unsupported
     def play(self, playlist):
         """
         Null player is unable to play anything.
@@ -137,24 +149,31 @@ class NullPlayer(Player):
         """
         return False
 
+    @unsupported
     def jump(self, time):
         """Do nothing."""
 
+    @unsupported
     def resume(self):
         """Do nothing."""
 
+    @unsupported
     def stop(self):
         """Do nothing."""
 
+    @unsupported
     def pause(self):
         """Do nothing."""
 
+    @unsupported
     def next(self):
         """Do nothing."""
 
+    @unsupported
     def previous(self):
         """Do nothing."""
 
+    @unsupported
     def repeat(self, mode):
         """Do nothing."""
 

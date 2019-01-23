@@ -71,6 +71,18 @@ def _get_player():
 
 class TestTuneInPlayer(unittest.TestCase):
 
+    def test_is_supported(self):
+        player, api = _get_player()
+
+        self.assertTrue(player.is_play_supported())
+        self.assertFalse(player.is_jump_supported())
+        self.assertTrue(player.is_resume_supported())
+        self.assertFalse(player.is_stop_supported())
+        self.assertTrue(player.is_pause_supported())
+        self.assertTrue(player.is_next_supported())
+        self.assertTrue(player.is_previous_supported())
+        self.assertFalse(player.is_repeat_supported())
+
     def test_play(self):
         playlist = [
             type('Item', (object, ), {

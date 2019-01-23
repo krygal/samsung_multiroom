@@ -93,6 +93,38 @@ class Player(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
+    def __getattribute__(self, name):
+        """
+        Magic is_[function]_supported method.
+
+        Function can be any Player method. In order to mark method as unsupported, use @unsupported decorator.
+
+        Example:
+            MyPlayer(Player):
+                @unsupported
+                def play(self, playlist):
+                    return False
+
+            player = MyPlayer()
+            player.is_play_supported() # returns False
+        """
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            function_name = get_is_supported_function_name(name)
+
+            if not function_name:
+                raise
+
+            if not hasattr(self, function_name):
+                raise
+
+            function = getattr(self, function_name)
+            if not hasattr(function, '__is_supported__'):
+                return lambda: True
+
+            return lambda: bool(function.__is_supported__)
+
 
 class Track:
     """Defines a media track on the playlist."""
@@ -174,3 +206,26 @@ def init_track_kwargs(object_type):
             'object_type': object_type,
         }
     }
+
+
+def unsupported(function):
+    """Decorator to mark player function as unsupported."""
+    function.__is_supported__ = False
+
+    return function
+
+
+def get_is_supported_function_name(name):
+    """
+    :param name: function name
+    :returns: Function name from is_[function_name]_supported structure, None otherwise
+    """
+    import re
+
+    pattern = re.compile(r'^is_(\w+)_supported$')
+    matches = pattern.findall(name)
+
+    if not matches:
+        return None
+
+    return matches[0]

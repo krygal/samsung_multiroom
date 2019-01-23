@@ -4,6 +4,7 @@ from ..player import REPEAT_OFF
 from ..player import Player
 from ..player import Track
 from ..player import init_track_kwargs
+from ..player import unsupported
 
 
 class TuneInPlayer(Player):
@@ -33,6 +34,7 @@ class TuneInPlayer(Player):
 
         return False
 
+    @unsupported
     def jump(self, time):
         """
         Not supported for radios.
@@ -44,6 +46,7 @@ class TuneInPlayer(Player):
         """Play/resume current track."""
         self._api.set_select_radio()
 
+    @unsupported
     def stop(self):
         """Stop current radio."""
         raise NotImplementedError()
@@ -60,6 +63,7 @@ class TuneInPlayer(Player):
         """Play previous radio from the preset list."""
         self._previous_next_preset(-1)
 
+    @unsupported
     def repeat(self, mode):
         """Not supported for radio."""
 

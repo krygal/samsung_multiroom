@@ -8,6 +8,18 @@ from samsung_multiroom.service.player_operator import NullPlayer
 
 class TestNullPlayer(unittest.TestCase):
 
+    def test_is_supported(self):
+        player = NullPlayer()
+
+        self.assertFalse(player.is_play_supported())
+        self.assertFalse(player.is_jump_supported())
+        self.assertFalse(player.is_resume_supported())
+        self.assertFalse(player.is_stop_supported())
+        self.assertFalse(player.is_pause_supported())
+        self.assertFalse(player.is_next_supported())
+        self.assertFalse(player.is_previous_supported())
+        self.assertFalse(player.is_repeat_supported())
+
     def test_play(self):
         player = NullPlayer()
         self.assertFalse(player.play(MagicMock()))

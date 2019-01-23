@@ -3,6 +3,7 @@ from ..player import REPEAT_OFF
 from ..player import Player
 from ..player import Track
 from ..player import init_track_kwargs
+from ..player import unsupported
 
 
 class AppPlayer(Player):
@@ -35,6 +36,7 @@ class AppPlayer(Player):
 
         return False
 
+    @unsupported
     def jump(self, time):
         """
         Not supported for app.
@@ -46,6 +48,7 @@ class AppPlayer(Player):
         """Play/resume current track."""
         self._api.set_playback_control('play')
 
+    @unsupported
     def stop(self):
         """Stop current track and reset position to the beginning."""
         raise NotImplementedError()
@@ -68,6 +71,7 @@ class AppPlayer(Player):
 
                 self._api.set_play_cp_playlist_track(playlist[previous_index]['contentid'])
 
+    @unsupported
     def repeat(self, mode):
         """Not supported for apps."""
 

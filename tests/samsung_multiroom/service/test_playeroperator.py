@@ -1,3 +1,4 @@
+import abc
 import unittest
 from unittest.mock import MagicMock
 
@@ -8,13 +9,24 @@ from samsung_multiroom.service import PlayerOperator
 from samsung_multiroom.service.player_operator import NullPlayer
 
 
+class FakePlayer(Player):
+
+    @abc.abstractmethod
+    def is_stop_supported(self):
+        pass
+
+    @abc.abstractmethod
+    def is_repeat_supported(self):
+        pass
+
+
 def get_mocks():
     api = MagicMock()
     api.get_func.return_value = {'function': 'test_function', 'submode': 'test_submode'}
 
-    player1 = MagicMock(spec=Player, name='player1')
+    player1 = MagicMock(spec=FakePlayer, name='player1')
     player1.is_active.return_value = False
-    player2 = MagicMock(spec=Player, name='player2')
+    player2 = MagicMock(spec=FakePlayer, name='player2')
     player2.is_active.return_value = True
 
     player_operator = PlayerOperator(api, [player1, player2])
@@ -24,6 +36,17 @@ def get_mocks():
 
 class TestPlayerOperator(unittest.TestCase):
 
+    def test_is_supported_uses_active_player(self):
+        player_operator, api, players = get_mocks()
+
+        players[0].is_stop_supported.return_value = False
+        players[0].is_repeat_supported.return_value = True
+        players[1].is_stop_supported.return_value = True
+        players[1].is_repeat_supported.return_value = False
+
+        self.assertTrue(player_operator.is_stop_supported())
+        self.assertFalse(player_operator.is_repeat_supported())
+
     def test_only_player_instances_are_allowed(self):
         api = MagicMock()
 
@@ -32,7 +55,7 @@ class TestPlayerOperator(unittest.TestCase):
 
         self.assertRaises(ValueError, PlayerOperator, api, [player1, player2])
 
-    def test_get_player_returns_supporting_player(self):
+    def test_get_player_returns_active_player(self):
         api = MagicMock()
         api.get_func.return_value = {'function': 'test_function', 'submode': 'test_submode'}
 
@@ -48,7 +71,7 @@ class TestPlayerOperator(unittest.TestCase):
         player1.is_active.assert_called_once_with('test_function', 'test_submode')
         player2.is_active.assert_called_once_with('test_function', 'test_submode')
 
-    def test_get_player_returns_nullplayer_if_no_supported(self):
+    def test_get_player_returns_nullplayer_if_no_active(self):
         api = MagicMock()
         api.get_func.return_value = {'function': 'test_function', 'submode': 'test_submode'}
 

@@ -5,6 +5,7 @@ from ..player import REPEAT_ONE
 from ..player import Player
 from ..player import Track
 from ..player import init_track_kwargs
+from ..player import unsupported
 
 
 class DlnaPlayer(Player):
@@ -59,6 +60,7 @@ class DlnaPlayer(Player):
         """Play/resume current track."""
         self._api.set_playback_control('resume')
 
+    @unsupported
     def stop(self):
         """Stop current track and reset position to the beginning."""
         raise NotImplementedError()
