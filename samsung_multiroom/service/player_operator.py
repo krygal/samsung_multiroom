@@ -98,6 +98,14 @@ class PlayerOperator(Player):
         """
         self.get_player().repeat(mode)
 
+    def shuffle(self, enabled):
+        """
+        Enable/disable playback shuffle mode.
+
+        :param enabled: True to enable, False to disable
+        """
+        self.get_player().shuffle(enabled)
+
     def get_repeat(self):
         """
         Get playback repeat mode.
@@ -105,6 +113,14 @@ class PlayerOperator(Player):
         :returns: one of REPEAT_* constants
         """
         return self.get_player().get_repeat()
+
+    def get_shuffle(self):
+        """
+        Get playback shuffle mode.
+
+        :returns: boolean, True if enabled, False otherwise
+        """
+        return self.get_player().get_shuffle()
 
     def get_current_track(self):
         """
@@ -177,9 +193,17 @@ class NullPlayer(Player):
     def repeat(self, mode):
         """Do nothing."""
 
+    @unsupported
+    def shuffle(self, enabled):
+        """Do nothing."""
+
     def get_repeat(self):
         """Always off."""
         return REPEAT_OFF
+
+    def get_shuffle(self):
+        """Always False."""
+        return False
 
     def get_current_track(self):
         """

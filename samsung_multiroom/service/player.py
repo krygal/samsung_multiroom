@@ -67,11 +67,29 @@ class Player(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def shuffle(self, enabled):
+        """
+        Enable/disable playback shuffle mode.
+
+        :param enabled: True to enable, False to disable
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def get_repeat(self):
         """
         Get playback repeat mode.
 
         :returns: one of REPEAT_* constants
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_shuffle(self):
+        """
+        Get playback shuffle mode.
+
+        :returns: boolean, True if enabled, False otherwise
         """
         raise NotImplementedError()
 

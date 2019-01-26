@@ -32,9 +32,16 @@ class FakePlayer(Player):
     def repeat(self, mode):
         """Fake."""
 
+    def shuffle(self, enabled):
+        """Fake."""
+
     def get_repeat(self):
         """Fake."""
         return REPEAT_OFF
+
+    def get_shuffle(self):
+        """Fake."""
+        return False
 
     def get_current_track(self):
         """Fake."""

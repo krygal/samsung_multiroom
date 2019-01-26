@@ -27,6 +27,7 @@ class TestDlnaPlayer(unittest.TestCase):
         self.assertTrue(player.is_next_supported())
         self.assertTrue(player.is_previous_supported())
         self.assertTrue(player.is_repeat_supported())
+        self.assertTrue(player.is_shuffle_supported())
 
     def test_play(self):
         playlist = [
@@ -149,6 +150,13 @@ class TestDlnaPlayer(unittest.TestCase):
 
         api.set_repeat_mode.assert_called_once_with('all')
 
+    def test_shuffle(self):
+        player, api = _get_player()
+
+        player.shuffle(True)
+
+        api.set_shuffle_mode.assert_called_once_with(True)
+
     def test_repeat_raises_value_error(self):
         player, api = _get_player()
 
@@ -165,6 +173,16 @@ class TestDlnaPlayer(unittest.TestCase):
         self.assertEqual(repeat, REPEAT_ONE)
 
         api.get_repeat_mode.assert_called_once()
+
+    def test_get_shuffle(self):
+        player, api = _get_player()
+        api.get_shuffle_mode.return_value = True
+
+        shuffle = player.get_shuffle()
+
+        self.assertTrue(shuffle)
+
+        api.get_shuffle_mode.assert_called_once()
 
     def test_get_current_track(self):
         player, api = _get_player()

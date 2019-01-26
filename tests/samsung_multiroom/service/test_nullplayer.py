@@ -19,6 +19,7 @@ class TestNullPlayer(unittest.TestCase):
         self.assertFalse(player.is_next_supported())
         self.assertFalse(player.is_previous_supported())
         self.assertFalse(player.is_repeat_supported())
+        self.assertFalse(player.is_shuffle_supported())
 
     def test_play(self):
         player = NullPlayer()
@@ -56,11 +57,21 @@ class TestNullPlayer(unittest.TestCase):
         player = NullPlayer()
         player.repeat(REPEAT_ONE)
 
+    def test_shuffle(self):
+        player = NullPlayer()
+        player.shuffle(True)
+
     def test_get_repeat(self):
         player = NullPlayer()
         repeat = player.get_repeat()
 
         self.assertEqual(repeat, REPEAT_OFF)
+
+    def test_get_shuffle(self):
+        player = NullPlayer()
+        shuffle = player.get_shuffle()
+
+        self.assertFalse(shuffle)
 
     def test_is_active(self):
         player = NullPlayer()

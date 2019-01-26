@@ -94,6 +94,14 @@ class DlnaPlayer(Player):
 
         self._api.set_repeat_mode(mode_map[mode])
 
+    def shuffle(self, enabled):
+        """
+        Enable/disable playback shuffle mode.
+
+        :param enabled: True to enable, False to disable
+        """
+        self._api.set_shuffle_mode(enabled)
+
     def get_repeat(self):
         """
         Get playback repeat mode.
@@ -109,6 +117,14 @@ class DlnaPlayer(Player):
         mode = self._api.get_repeat_mode()
 
         return mode_map[mode]
+
+    def get_shuffle(self):
+        """
+        Get playback shuffle mode.
+
+        :returns: boolean, True if enabled, False otherwise
+        """
+        return self._api.get_shuffle_mode()
 
     def get_current_track(self):
         """

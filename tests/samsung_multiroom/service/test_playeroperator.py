@@ -176,6 +176,13 @@ class TestPlayerOperator(unittest.TestCase):
         players[0].repeat.assert_not_called()
         players[1].repeat.assert_called_once_with(REPEAT_ONE)
 
+    def test_shuffle(self):
+        player_operator, api, players = get_mocks()
+        player_operator.shuffle(True)
+
+        players[0].shuffle.assert_not_called()
+        players[1].shuffle.assert_called_once_with(True)
+
     def test_get_repeat(self):
         player_operator, api, players = get_mocks()
 
@@ -183,8 +190,22 @@ class TestPlayerOperator(unittest.TestCase):
 
         repeat = player_operator.get_repeat()
 
+        self.assertEqual(repeat, REPEAT_ALL)
+
         players[0].get_repeat.assert_not_called()
         players[1].get_repeat.assert_called_once()
+
+    def test_get_shuffle(self):
+        player_operator, api, players = get_mocks()
+
+        players[1].get_shuffle.return_value = True
+
+        shuffle = player_operator.get_shuffle()
+
+        self.assertTrue(shuffle)
+
+        players[0].get_shuffle.assert_not_called()
+        players[1].get_shuffle.assert_called_once()
 
     def test_get_current_track(self):
         player_operator, api, players = get_mocks()

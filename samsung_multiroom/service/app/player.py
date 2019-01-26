@@ -75,9 +75,17 @@ class AppPlayer(Player):
     def repeat(self, mode):
         """Not supported for apps."""
 
+    @unsupported
+    def shuffle(self, enabled):
+        """Not supported for apps."""
+
     def get_repeat(self):
         """Not supported for apps."""
         return REPEAT_OFF
+
+    def get_shuffle(self):
+        """Not supported for apps."""
+        return False
 
     def get_current_track(self):
         """

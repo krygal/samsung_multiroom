@@ -27,6 +27,7 @@ class TestAppPlayer(unittest.TestCase):
         self.assertTrue(player.is_next_supported())
         self.assertTrue(player.is_previous_supported())
         self.assertFalse(player.is_repeat_supported())
+        self.assertFalse(player.is_shuffle_supported())
 
     def test_play(self):
         player, api = _get_player()
@@ -124,12 +125,28 @@ class TestAppPlayer(unittest.TestCase):
 
         api.set_repeat_mode.assert_not_called()
 
+    def test_shuffle(self):
+        player, api = _get_player()
+
+        player.shuffle(True)
+
+        api.set_shuffle_mode.assert_not_called()
+
     def test_get_repeat(self):
         player, api = _get_player()
 
         repeat = player.get_repeat()
 
         self.assertEqual(repeat, REPEAT_OFF)
+
+        api.get_repeat_mode.assert_not_called()
+
+    def test_get_shuffle(self):
+        player, api = _get_player()
+
+        shuffle = player.get_shuffle()
+
+        self.assertFalse(shuffle)
 
         api.get_repeat_mode.assert_not_called()
 
