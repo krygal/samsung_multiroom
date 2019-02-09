@@ -5,6 +5,10 @@ from samsung_multiroom.api import ApiResponse
 from samsung_multiroom.api import ApiStream
 
 
+def _get_api_stream():
+    return ApiStream('public', '192.168.1.129')
+
+
 class TestApiStream(unittest.TestCase):
 
     @unittest.mock.patch('socket.socket')
@@ -41,7 +45,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
             }
         ]
 
-        stream = ApiStream('192.168.1.129')
+        stream = _get_api_stream()
 
         responses = list(stream.open('/UIC?cmd=%3Cname%3EGetMainInfo%3C/name%3E'))
 
@@ -142,7 +146,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
             }
         ]
 
-        stream = ApiStream('192.168.1.129')
+        stream = _get_api_stream()
 
         responses = list(stream.open('/UIC?cmd=%3Cname%3EGetMainInfo%3C/name%3E'))
 

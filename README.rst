@@ -194,6 +194,45 @@ Example speaker control
     speaker_group.player.play(browser)
 
 
+**Events (preview)**
+
+You can monitor events emitted by the speaker without polling. Currently only three events are supported with more
+coming soon. Full list can be found in samsung_multiroom/event/type/.
+
+.. code:: python
+
+    import asyncio
+
+    from samsung_multiroom import SamsungMultiroomSpeaker
+
+    # listener will be passed an Event object (see samsung_multiroom/event/type/)
+    def listener(event):
+        print(event)
+
+
+    async def main():
+        speaker = SamsungMultiroomSpeaker('192.168.1.129')
+        event_loop = speaker.event_loop
+        event_loop.add_listener('*', listener)
+
+        await event_loop.loop()
+
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
+    loop.close()
+
+.. code:: python
+
+    # listen to all events
+    event_loop.add_listener('*', listener)
+
+    # listen to events within a namespace
+    event_loop.add_listener('speaker.service.*', listener)
+
+    # listen to a single event
+    event_loop.add_listener('speaker.service.changed', listener)
+
 
 License
 -------

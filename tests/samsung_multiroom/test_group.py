@@ -171,6 +171,14 @@ class TestSpeakerGroup(unittest.TestCase):
         speakers[1].unmute.assert_called_once()
         speakers[2].unmute.assert_called_once()
 
+    def test_event_loop_returns_main_speaker_event_loop(self):
+        speaker_group, api, speakers = _get_speaker_group()
+        speakers[0].event_loop = MagicMock()
+
+        el = speaker_group.event_loop
+
+        self.assertEqual(el, speakers[0].event_loop)
+
     def test_get_services_names_returns_main_speaker_services(self):
         speaker_group, api, speakers = _get_speaker_group()
 

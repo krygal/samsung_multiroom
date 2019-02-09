@@ -6,17 +6,19 @@ from .group import SpeakerGroup
 class Speaker(SpeakerBase):
     """Entry control for speaker operation."""
 
-    def __init__(self, api, clock, equalizer, player_operator, service_registry):
+    def __init__(self, api, event_loop, clock, equalizer, player_operator, service_registry):
         """
         Initialise the speaker.
 
         :param api: SamsungMultiroomApi instance
+        :param event_loop: EventLoop instance
         :param clock: Clock instance
         :param equalizer: Equalizer instance
         :param player_operator: PlayerOperator instance
         :param service_registry: ServiceRegistry instance
         """
         self._api = api
+        self._event_loop = event_loop
         self._clock = clock
         self._equalizer = equalizer
         self._player_operator = player_operator
@@ -115,6 +117,15 @@ class Speaker(SpeakerBase):
     def unmute(self):
         """Unmute the speaker."""
         self._api.set_mute(False)
+
+    @property
+    def event_loop(self):
+        """
+        Get event loop
+
+        :returns: EventLoop instance
+        """
+        return self._event_loop
 
     def get_services_names(self):
         """

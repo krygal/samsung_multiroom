@@ -11,6 +11,7 @@ flake8 = "*"
 pylint = "*"
 autopep8 = "*"
 yapf = "*"
+pytest-asyncio = "*"
 
 [packages]
 xmltodict = "*"

@@ -91,6 +91,15 @@ class SpeakerBase(metaclass=abc.ABCMeta):
         """Unmute the speaker."""
         raise NotImplementedError()
 
+    @property
+    def event_loop(self):
+        """
+        Get event loop
+
+        :returns: EventLoop instance
+        """
+        raise NotImplementedError()
+
     def get_services_names(self):
         """
         Get all supported services names.

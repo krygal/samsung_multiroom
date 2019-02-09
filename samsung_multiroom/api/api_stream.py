@@ -24,20 +24,22 @@ class ApiStream:
     Once opened it will listen to messages in definitely, until interrupted using close() method.
 
     Example:
-        stream = ApiStream('129.168.1.129')
+        stream = ApiStream('unique-id', '129.168.1.129')
 
         for response in stream.open('/UIC?cmd=%3Cname%3EGetMainInfo%3C/name%3E'):
             print(response.data)
     """
 
-    def __init__(self, ip_address, port=55001, timeout=None):
+    def __init__(self, user, ip_address, port=55001, timeout=None):
         """
         Initialise stream.
 
+        :param user: User identifier to pass along with request
         :param ip_address: IP address of the speaker to connect to
         :param port: Port to use, defaults to 55001
         :param timeout: Timeout in seconds
         """
+        self._user = user
         self._ip_address = ip_address
         self._port = port
         self._timeout = timeout
@@ -53,6 +55,12 @@ class ApiStream:
         """
         self._continue_stream = True
 
+        headers = {
+            'mobileUUID': self._user,
+            'mobileName': 'Wireless Audio',
+            'mobileVersion': '1.0',
+        }
+
         while self._continue_stream:
             _LOGGER.debug('Opening new stream')
             try:
@@ -64,6 +72,8 @@ class ApiStream:
                 sock.settimeout(self._timeout)
                 sock.send('GET {0} HTTP/1.1\r\n'.format(uri).encode())
                 sock.send('Host: {0}:{1}\r\n'.format(self._ip_address, self._port).encode())
+                for header, value in headers.items():
+                    sock.send('{0}: {1}\r\n'.format(header, value).encode())
                 sock.send('\r\n\r\n'.encode())
 
                 while self._continue_stream:

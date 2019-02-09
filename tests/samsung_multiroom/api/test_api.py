@@ -14,15 +14,19 @@ from samsung_multiroom.api import SamsungMultiroomApiException
 from samsung_multiroom.api import paginator
 
 
+def _get_api():
+    return SamsungMultiroomApi('public', '192.168.1.129', 55001)
+
+
 class TestApi(unittest.TestCase):
 
     def test_invalid_method_raises_exception(self):
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
 
         self.assertRaises(ValueError, api.request, 'post', COMMAND_CPM, '<name>GetSpkName</name>')
 
     def test_invalid_command_raises_exception(self):
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
 
         self.assertRaises(ValueError, api.request, METHOD_GET, 'INVALIDCOMMAND', '<name>GetSpkName</name>')
 
@@ -37,7 +41,7 @@ class TestApi(unittest.TestCase):
             body=exception_response
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         self.assertRaises(SamsungMultiroomApiException, api.request, METHOD_GET, COMMAND_UIC, '<name>GetSpkName</name>')
 
     @httpretty.activate(allow_net_connect=False)
@@ -55,7 +59,7 @@ class TestApi(unittest.TestCase):
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         self.assertRaises(SamsungMultiroomApiException, api.request, METHOD_GET, COMMAND_UIC, '<name>GetSpkName</name>')
 
     @httpretty.activate(allow_net_connect=False)
@@ -75,7 +79,7 @@ class TestApi(unittest.TestCase):
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         response = api.request(METHOD_GET, COMMAND_UIC, '<name>GetSpkName</name>')
 
         self.assertEqual(response, {
@@ -100,7 +104,7 @@ class TestApi(unittest.TestCase):
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         speaker_name = api.get_speaker_name()
 
         self.assertEqual(speaker_name, 'Living Room')
@@ -123,7 +127,7 @@ class TestApi(unittest.TestCase):
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         speaker_name = api.set_speaker_name('Living Room')
 
     @unittest.mock.patch('socket.socket')
@@ -150,7 +154,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
             b'',
         ]
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         main_info = api.get_main_info()
 
         self.assertEqual(main_info, {
@@ -189,7 +193,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         volume = api.get_volume()
 
         self.assertEqual(volume, 10)
@@ -212,7 +216,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_volume(10)
 
     @httpretty.activate(allow_net_connect=False)
@@ -233,7 +237,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         mute = api.get_mute()
 
         self.assertEqual(mute, False)
@@ -256,7 +260,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_mute(True)
 
     @httpretty.activate(allow_net_connect=False)
@@ -280,7 +284,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         func = api.get_func()
 
         self.assertEqual(func, {
@@ -309,7 +313,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_func('bt')
 
     @httpretty.activate(allow_net_connect=False)
@@ -330,7 +334,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         shuffle_mode = api.get_shuffle_mode()
 
         self.assertEqual(shuffle_mode, True)
@@ -353,7 +357,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_shuffle_mode(True)
 
     @httpretty.activate(allow_net_connect=False)
@@ -377,7 +381,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_trick_mode('next')
 
     @httpretty.activate(allow_net_connect=False)
@@ -398,7 +402,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_playback_control('pause')
 
     @httpretty.activate(allow_net_connect=False)
@@ -434,7 +438,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         music_info = api.get_music_info()
 
         self.assertEqual(music_info['title'], 'New star in the sky')
@@ -466,7 +470,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         func = api.get_play_status()
 
         self.assertEqual(func, {
@@ -494,7 +498,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_search_time(50)
 
     @httpretty.activate(allow_net_connect=False)
@@ -570,7 +574,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         preset_list = api.get_preset_list(0, 10)
 
         self.assertEqual(len(preset_list), 6)
@@ -609,7 +613,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         func = api.get_radio_info()
 
         self.assertEqual(func, {
@@ -644,7 +648,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_play_preset(1, 0)
 
     @httpretty.activate(allow_net_connect=False)
@@ -672,7 +676,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_select_radio()
 
     @httpretty.activate(allow_net_connect=False)
@@ -706,7 +710,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         dms_list = api.get_dms_list(0, 20)
 
         self.assertEqual(len(dms_list), 1)
@@ -783,7 +787,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         music_list = api.pc_get_music_list_by_category('uuid:00113249-398f-0011-8f39-8f3949321100', 0, 20)
 
         self.assertEqual(len(music_list), 3)
@@ -851,7 +855,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         music_list = api.pc_get_music_list_by_id('uuid:00113249-398f-0011-8f39-8f3949321100', '22$30224', 0, 20)
 
         self.assertEqual(len(music_list), 2)
@@ -896,7 +900,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
             }
         ]
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_playlist_playback_control(items)
 
     @httpretty.activate(allow_net_connect=False)
@@ -942,7 +946,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         items = api.browse_main(0, 30)
 
         self.assertEqual(len(items), 4)
@@ -995,7 +999,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         items = api.get_select_radio_list(10, 0, 30)
 
         self.assertEqual(len(items), 4)
@@ -1060,7 +1064,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         items = api.get_select_radio_list(3, 0, 30)
 
         self.assertEqual(len(items), 4)
@@ -1128,7 +1132,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         items = api.get_current_radio_list(0, 30)
 
         self.assertEqual(len(items), 4)
@@ -1184,7 +1188,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         items = api.get_upper_radio_list(0, 30)
 
         self.assertEqual(len(items), 4)
@@ -1212,7 +1216,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_play_select('0')
 
     @httpretty.activate(allow_net_connect=False)
@@ -1233,7 +1237,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_play_select(['1', '2', '3'])
 
     @httpretty.activate(allow_net_connect=False)
@@ -1260,7 +1264,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         station_data = api.get_station_data(3)
 
         self.assertEqual(station_data, {
@@ -1314,7 +1318,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         presets = api.get_7band_eq_list()
 
         self.assertEqual(len(presets), 5)
@@ -1350,7 +1354,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         equalizer = api.get_current_eq_mode()
 
         self.assertEqual(equalizer, {
@@ -1390,7 +1394,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_7band_eq_value(4, [1,2,3,4,5,6,-6])
 
     @httpretty.activate(allow_net_connect=False)
@@ -1419,7 +1423,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_7band_eq_mode(1)
 
     @httpretty.activate(allow_net_connect=False)
@@ -1447,7 +1451,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.reset_7band_eq_value(1, [1,2,3,4,5,6,-6])
 
     @httpretty.activate(allow_net_connect=False)
@@ -1469,7 +1473,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.del_custom_eq_mode(5)
 
     @httpretty.activate(allow_net_connect=False)
@@ -1491,7 +1495,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.add_custom_eq_mode(5, 'my custom preset')
 
     @httpretty.activate(allow_net_connect=False)
@@ -1519,7 +1523,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
 
         import datetime
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_speaker_time(datetime.datetime(2019, 1, 6, 12, 55, 24))
 
     @httpretty.activate(allow_net_connect=False)
@@ -1541,7 +1545,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         timer = api.get_sleep_timer()
 
         self.assertEqual(timer, {
@@ -1568,7 +1572,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_sleep_timer('start', 300)
 
     @httpretty.activate(allow_net_connect=False)
@@ -1621,7 +1625,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         alarm_info = api.get_alarm_info()
 
         self.assertEqual(len(alarm_info), 2)
@@ -1661,7 +1665,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_alarm_on_off(0, 'on')
 
     @httpretty.activate(allow_net_connect=False)
@@ -1700,7 +1704,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         sounds = api.get_alarm_sound_list()
 
         self.assertEqual(len(sounds), 4)
@@ -1740,7 +1744,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_alarm_info(
             index=0,
             hour=18,
@@ -1776,7 +1780,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.del_alarm([0, 1, 2, 4])
 
     @unittest.skip('API call doesn\'t give any response')
@@ -1803,7 +1807,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_multispk_group('Test group', [
             {
                 'name': 'Living Room',
@@ -1838,7 +1842,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_ungroup()
 
     @httpretty.activate(allow_net_connect=False)
@@ -1860,7 +1864,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
         )
 
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_group_name('Updated group name')
 
     @httpretty.activate(allow_net_connect=False)
@@ -1901,7 +1905,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                     </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         cps = api.get_cp_list(0, 30)
 
         self.assertEqual(len(cps), 3)
@@ -1929,7 +1933,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_cp_service(2)
 
     @httpretty.activate(allow_net_connect=False)
@@ -1961,7 +1965,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         cp_info = api.get_cp_info()
 
         self.assertEqual(cp_info, {
@@ -2004,7 +2008,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_sign_in('test_username', 'test_password')
 
     @httpretty.activate(allow_net_connect=False)
@@ -2029,7 +2033,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_sign_out()
 
     @httpretty.activate(allow_net_connect=False)
@@ -2063,7 +2067,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         submenu = api.get_cp_submenu()
 
         self.assertEqual(len(submenu), 3)
@@ -2141,7 +2145,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         submenu = api.set_select_cp_submenu(1, 0, 10)
 
         self.assertEqual(len(submenu), 10)
@@ -2207,7 +2211,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         playlist = api.get_cp_player_playlist(0, 30)
 
         self.assertEqual(len(playlist), 3)
@@ -2249,7 +2253,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </CPM>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_skip_current_track()
 
     @httpretty.activate(allow_net_connect=False)
@@ -2271,7 +2275,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         play_time = api.get_current_play_time()
 
         self.assertEqual(play_time, {
@@ -2297,7 +2301,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_play_cp_playlist_track(0)
 
     @httpretty.activate(allow_net_connect=False)
@@ -2318,7 +2322,7 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         repeat_mode = api.get_repeat_mode()
 
         self.assertEqual(repeat_mode, 'off')
@@ -2341,5 +2345,5 @@ Last-Modified: Fri, 02 Jan 1970 10:53:13 GMT
                 </UIC>"""
         )
 
-        api = SamsungMultiroomApi('192.168.1.129', 55001)
+        api = _get_api()
         api.set_repeat_mode('one')

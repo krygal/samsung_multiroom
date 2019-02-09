@@ -130,6 +130,15 @@ class SpeakerGroup(SpeakerBase):
         for speaker in self._speakers:
             speaker.unmute()
 
+    @property
+    def event_loop(self):
+        """
+        Get event loop
+
+        :returns: EventLoop instance
+        """
+        return self._speakers[0].event_loop
+
     def get_services_names(self):
         """
         Get all supported services names.

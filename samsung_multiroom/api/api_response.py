@@ -11,6 +11,7 @@ class ApiResponse:
 
     def __init__(self, response_text):
         self._name = None
+        self._user = None
         self._success = None
         self._data = None
         self._raw = None
@@ -23,6 +24,13 @@ class ApiResponse:
         :returns: resopnse type/name
         """
         return self._name
+
+    @property
+    def user(self):
+        """
+        :returns: resopnse user identifier
+        """
+        return self._user
 
     @property
     def success(self):
@@ -60,6 +68,7 @@ class ApiResponse:
 
             self._name = response_dict[response_command]['method']
             self._data = response_dict[response_command]['response']
+            self._user = response_dict[response_command]['user_identifier'] or None
             self._success = (self._data['@result'] == 'ok')
 
             # redundant

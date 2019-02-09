@@ -11,7 +11,7 @@ class TestApiResponse(unittest.TestCase):
                 <method>VolumeLevel</method>
                 <version>1.0</version>
                 <speakerip>192.168.1.129</speakerip>
-                <user_identifier></user_identifier>
+                <user_identifier>de890e34-2347-11e9-ab14-d663bd873d93</user_identifier>
                 <response result="ok">
                     <volume>10</volume>
                 </response>
@@ -22,6 +22,7 @@ class TestApiResponse(unittest.TestCase):
         self.assertTrue(response.success)
         self.assertEqual(response.raw, response_text)
         self.assertEqual(response.name, 'VolumeLevel')
+        self.assertEqual(response.user, 'de890e34-2347-11e9-ab14-d663bd873d93')
         self.assertEqual(response.data, {
             'volume': '10'
         })
@@ -34,6 +35,7 @@ class TestApiResponse(unittest.TestCase):
         self.assertFalse(response.success)
         self.assertEqual(response.raw, response_text)
         self.assertEqual(response.name, None)
+        self.assertEqual(response.user, None)
         self.assertEqual(response.data, None)
 
     def test_parse_fails_response_notok(self):
@@ -51,6 +53,7 @@ class TestApiResponse(unittest.TestCase):
         self.assertFalse(response.success)
         self.assertEqual(response.raw, response_text)
         self.assertEqual(response.name, 'VolumeLevel')
+        self.assertEqual(response.user, None)
         self.assertEqual(response.data, {})
 
     def test_parse_fails_wrong_xml(self):
@@ -65,4 +68,5 @@ class TestApiResponse(unittest.TestCase):
         self.assertFalse(response.success)
         self.assertEqual(response.raw, response_text)
         self.assertEqual(response.name, None)
+        self.assertEqual(response.user, None)
         self.assertEqual(response.data, None)

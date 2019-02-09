@@ -1,7 +1,6 @@
 """Low level api to communicate with samsung multiroom speaker."""
 import logging
 import urllib.parse
-import uuid
 
 import requests
 
@@ -27,19 +26,20 @@ class SamsungMultiroomApi:
     Contains non-inclusive list of API calls you can make to control the speaker.
     """
 
-    def __init__(self, ip_address, port=55001, timeout=5):
+    def __init__(self, user, ip_address, port=55001, timeout=5):
         """
         Initialise endpoint.
 
+        :param user: User identifier to pass along with request
         :param ip_address: IP address of the speaker to connect to
         :param port: Port to use, defaults to 55001
         :param timeout: Timeout in seconds
         """
+        self._user = user
         self._ip_address = ip_address
         self._port = port
         self._endpoint = 'http://{0}:{1}'.format(ip_address, port)
         self._timeout = timeout
-        self._uuid = str(uuid.uuid1())
 
     @property
     def ip_address(self):
@@ -74,7 +74,7 @@ class SamsungMultiroomApi:
 
         url = '{0}/{1}?cmd={2}'.format(self._endpoint, command, urllib.parse.quote(payload))
         headers = {
-            'mobileUUID': self._uuid,
+            'mobileUUID': self._user,
             'mobileName': 'Wireless Audio',
             'mobileVersion': '1.0',
         }
@@ -146,7 +146,7 @@ class SamsungMultiroomApi:
         """
         path = '/{0}?cmd={1}'.format(COMMAND_UIC, urllib.parse.quote(format_payload('GetMainInfo')))
 
-        stream = ApiStream(self._ip_address, self._port, self._timeout)
+        stream = ApiStream(self._user, self._ip_address, self._port, self._timeout)
 
         # Speaker sends two http responses for this request, latter one contains correct payload. We attempt
         # to fetch both responses and read/parse both.
