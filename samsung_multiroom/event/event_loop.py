@@ -70,7 +70,10 @@ class EventLoop:
 def _get_default_factories():
     event_classes = [
         ('samsung_multiroom.event.type.speaker_mute_changed', 'SpeakerMuteChangedEvent'),
-        ('samsung_multiroom.event.type.speaker_service_changed', 'SpeakerServiceChangedEvent'),
+        ('samsung_multiroom.event.type.speaker_player', 'SpeakerPlayerEvent'),
+        ('samsung_multiroom.event.type.speaker_player_repeat_changed', 'SpeakerPlayerRepeatChangedEvent'),
+        ('samsung_multiroom.event.type.speaker_player_shuffle_changed', 'SpeakerPlayerShuffleChangedEvent'),
+        ('samsung_multiroom.event.type.speaker_service', 'SpeakerServiceEvent'),
         ('samsung_multiroom.event.type.speaker_volume_changed', 'SpeakerVolumeChangedEvent'),
     ]
 

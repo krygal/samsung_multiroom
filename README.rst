@@ -196,8 +196,8 @@ Example speaker control
 
 **Events (preview)**
 
-You can monitor events emitted by the speaker without polling. Currently only three events are supported with more
-coming soon. Full list can be found in samsung_multiroom/event/type/.
+You can monitor events emitted by the speaker without polling. Full list of supported events can be found in
+samsung_multiroom/event/type/.
 
 .. code:: python
 
@@ -205,9 +205,10 @@ coming soon. Full list can be found in samsung_multiroom/event/type/.
 
     from samsung_multiroom import SamsungMultiroomSpeaker
 
+
     # listener will be passed an Event object (see samsung_multiroom/event/type/)
     def listener(event):
-        print(event)
+        print(event.name, event)
 
 
     async def main():

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 from samsung_multiroom.event.type.speaker_mute_changed import SpeakerMuteChangedEvent
 
 
-class TestSpeakerMuteChanged(unittest.TestCase):
+class TestSpeakerMuteChangedEvent(unittest.TestCase):
 
     def test_factory(self):
         response = MagicMock()
