@@ -16,14 +16,14 @@ from .service.tunein import TuneInPlayer
 from .speaker import Speaker
 
 
-def speaker_factory(ip_address):
+def speaker_factory(ip_address, port=55001):
     """
     Factory for Speaker.
 
     :param ip_address: IP address of the speaker.
     """
     user = str(uuid.uuid1())
-    api = SamsungMultiroomApi(user, ip_address)
+    api = SamsungMultiroomApi(user, ip_address, port=port)
     api_stream = ApiStream(user, ip_address)
 
     timer = Timer(api)
