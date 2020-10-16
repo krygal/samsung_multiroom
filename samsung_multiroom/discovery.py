@@ -1,4 +1,8 @@
 """Discover speakers on your local network."""
+from urllib.parse import urlparse
+
+import upnpclient
+
 from .factory import speaker_factory
 
 
@@ -17,8 +21,6 @@ class SpeakerDiscovery:
 
         :returns: List of Speaker instances
         """
-        import upnpclient
-        from urllib.parse import urlparse
 
         devices = upnpclient.discover()
         for device in devices:

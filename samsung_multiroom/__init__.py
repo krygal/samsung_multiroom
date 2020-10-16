@@ -2,9 +2,11 @@
 Init.
 """
 # pylint: disable=C0103
-from . import factory
 from . import discovery
-from .service import REPEAT_ONE, REPEAT_ALL, REPEAT_OFF
+from . import factory
+from .service import REPEAT_ALL
+from .service import REPEAT_OFF
+from .service import REPEAT_ONE
 
 # aliases
 SamsungMultiroomSpeaker = factory.speaker_factory

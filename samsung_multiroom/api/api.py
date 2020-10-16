@@ -1,4 +1,5 @@
 """Low level api to communicate with samsung multiroom speaker."""
+import inspect
 import logging
 import urllib.parse
 
@@ -84,9 +85,9 @@ class SamsungMultiroomApi:
             response = requests.get(url, headers=headers, timeout=self._timeout)
 
             return self._parse_response_text(response.text)
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as request_exception:
             _LOGGER.error('Request %s failed', url, exc_info=1)
-            raise SamsungMultiroomApiException('Request {0} failed'.format(url))
+            raise SamsungMultiroomApiException('Request {0} failed'.format(url)) from request_exception
 
     def _parse_response_text(self, response_text):
         _LOGGER.debug('Response %s', response_text)
@@ -1218,6 +1219,5 @@ def paginator(*args):
         current_kwargs['start_index'] = current_kwargs['start_index'] + current_kwargs['list_count']
 
 
-def _get_callable_parameters(callable):
-    import inspect
-    return inspect.signature(callable).parameters.keys()
+def _get_callable_parameters(arg_callable):
+    return inspect.signature(arg_callable).parameters.keys()

@@ -127,19 +127,18 @@ class AlarmSlot:
         if enabled is not None:
             self._enabled = bool(enabled)
 
-        self._api.set_alarm_info(
-            index=self._index,
-            hour=int(self._time.split(':')[0]),
-            minute=int(self._time.split(':')[1]),
-            week=weekday_list_to_hexweek(self._weekdays),
-            station_data={
-                'title': self._station_data['title'],
-                'description': self._station_data['description'],
-                'thumbnail': self._station_data['thumbnail_url'],
-                'stationurl': self._station_data['station_url'],
-            },
-            volume=self._volume,
-            duration=self._duration)
+        self._api.set_alarm_info(index=self._index,
+                                 hour=int(self._time.split(':')[0]),
+                                 minute=int(self._time.split(':')[1]),
+                                 week=weekday_list_to_hexweek(self._weekdays),
+                                 station_data={
+                                     'title': self._station_data['title'],
+                                     'description': self._station_data['description'],
+                                     'thumbnail': self._station_data['thumbnail_url'],
+                                     'stationurl': self._station_data['station_url'],
+                                 },
+                                 volume=self._volume,
+                                 duration=self._duration)
 
         self._api.set_alarm_on_off(self._index, 'on' if self._enabled else 'off')
 

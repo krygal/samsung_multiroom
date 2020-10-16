@@ -1,5 +1,6 @@
 """Player allows playback control depending on selected source."""
 import abc
+import re
 
 # repeat mode constants
 REPEAT_ONE = 'one'
@@ -238,8 +239,6 @@ def get_is_supported_function_name(name):
     :param name: function name
     :returns: Function name from is_[function_name]_supported structure, None otherwise
     """
-    import re
-
     pattern = re.compile(r'^is_(\w+)_supported$')
     matches = pattern.findall(name)
 
