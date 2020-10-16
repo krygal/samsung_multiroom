@@ -100,6 +100,8 @@ class ApiStream:
                         data = data[parsed_length:]
             except socket.error:
                 _LOGGER.error('Socket exception', exc_info=1)
+            except StopIteration:
+                break
             finally:
                 _LOGGER.debug('Closing the stream')
                 sock.shutdown(socket.SHUT_RDWR)

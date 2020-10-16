@@ -1190,9 +1190,8 @@ def paginator(*args):
         secondary = args[0]
         args = args[1:]
 
-    import inspect
-    primary_parameters = inspect.signature(primary).parameters.keys()
-    secondary_parameters = inspect.signature(secondary).parameters.keys()
+    primary_parameters = _get_callable_parameters(primary)
+    secondary_parameters = _get_callable_parameters(secondary)
 
     # match primary_parameters with args
     primary_kwargs = {}
@@ -1217,3 +1216,8 @@ def paginator(*args):
         current = secondary
         current_kwargs = secondary_kwargs
         current_kwargs['start_index'] = current_kwargs['start_index'] + current_kwargs['list_count']
+
+
+def _get_callable_parameters(callable):
+    import inspect
+    return inspect.signature(callable).parameters.keys()

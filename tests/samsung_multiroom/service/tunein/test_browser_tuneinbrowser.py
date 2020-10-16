@@ -96,12 +96,9 @@ def get_select_radio_list_side_effect(content_id, start_index, list_count):
 
 class TestTuneInBrowser(unittest.TestCase):
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_from_root(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2
 
         api = MagicMock()
         api.browse_main.return_value = browser_main_return_value()
@@ -118,18 +115,10 @@ class TestTuneInBrowser(unittest.TestCase):
         self.assertEqual(browser[0].object_id, '0')
         self.assertEqual(browser[0].object_type, 'container')
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_full_level(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2 +\
+            [['content_id', 'start_index', 'list_count']] * 6
 
         api = MagicMock()
         api.browse_main.return_value = browser_main_return_value()
@@ -152,18 +141,10 @@ class TestTuneInBrowser(unittest.TestCase):
         self.assertEqual(browser[0].object_id, '0')
         self.assertEqual(browser[0].object_type, 'tunein_radio')
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_relative(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'content_id': None, 'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2 +\
+            [['content_id', 'start_index', 'list_count']] * 6
 
         api = MagicMock()
         api.browse_main.return_value = browser_main_return_value()
