@@ -25,8 +25,8 @@ class DlnaBrowser(Browser):
 
         for folder in folders:
             # locate prepopulated items matching folder
-            device_udn, parent_id = next(
-                iter([(i.device_udn, i.object_id) for i in items if i.name == folder]), (None, None))
+            device_udn, parent_id = next(iter([(i.device_udn, i.object_id) for i in items if i.name == folder]),
+                                         (None, None))
 
             # if we don't have device udn we search through devices
             if device_udn is None:

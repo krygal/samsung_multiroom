@@ -25,7 +25,7 @@ dev-ci:
 style: isort autopep8 yapf
 
 isort:
-	pipenv run isort -y
+	pipenv run isort .
 
 autopep8:
 	pipenv run autopep8 --in-place --recursive setup.py $(MODULE)

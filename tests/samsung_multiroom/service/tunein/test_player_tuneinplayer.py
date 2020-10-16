@@ -161,9 +161,9 @@ class TestTuneInPlayer(unittest.TestCase):
 
         api.set_playback_control.assert_called_once_with('pause')
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_next(self, signature):
-        signature.return_value = type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}})
+        signature.return_value = ['start_index', 'list_count']
 
         player, api = _get_player()
 
@@ -174,9 +174,9 @@ class TestTuneInPlayer(unittest.TestCase):
         api.set_play_preset.assert_called_once_with(1, 1)
         api.set_select_radio.assert_called_once()
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_previous(self, signature):
-        signature.return_value = type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}})
+        signature.return_value = ['start_index', 'list_count']
 
         player, api = _get_player()
 

@@ -107,12 +107,9 @@ def pc_get_music_list_by_id_side_effect(device_udn, parent_id, start_index, list
 
 class TestDlnaBrowser(unittest.TestCase):
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_from_root(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2
 
         api = MagicMock()
         api.get_dms_list.return_value = get_dms_list_return_value()
@@ -129,14 +126,10 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(browser[0].name, 'NAS')
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_second_level(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2 +\
+            [['device_udn', 'start_index', 'list_count']] * 2
 
         api = MagicMock()
         api.get_dms_list.return_value = get_dms_list_return_value()
@@ -156,18 +149,11 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(browser[0].name, 'Music')
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_full_level(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2 +\
+            [['device_udn', 'start_index', 'list_count']] * 2 +\
+            [['device_udn', 'parent_id', 'start_index', 'list_count']] * 4
 
         api = MagicMock()
         api.get_dms_list.return_value = get_dms_list_return_value()
@@ -192,18 +178,11 @@ class TestDlnaBrowser(unittest.TestCase):
         self.assertEqual(browser[0].name, 'La femme d\'argent')
         self.assertEqual(browser[0].device_udn, 'uuid:00113249-398f-0011-8f39-8f3949321100')
 
-    @unittest.mock.patch('inspect.signature')
+    @unittest.mock.patch('samsung_multiroom.api.api._get_callable_parameters')
     def test_browse_relative_path(self, signature):
-        signature.side_effect = [
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-            type('signature', (object, ), {'parameters': {'device_udn': None, 'parent_id':None, 'start_index': None, 'list_count': None}}),
-        ]
+        signature.side_effect = [['start_index', 'list_count']] * 2 +\
+            [['device_udn', 'start_index', 'list_count']] * 2 +\
+            [['device_udn', 'parent_id', 'start_index', 'list_count']] * 4
 
         api = MagicMock()
         api.get_dms_list.return_value = get_dms_list_return_value()
